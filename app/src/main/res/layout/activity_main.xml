@@ -147,56 +147,56 @@
             </LinearLayout>
 
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <CheckBox
-                    android:id="@+id/checkboxTransmit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Transmit" />
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="4"
-                    android:gravity="center"
-                    android:text="Window Size: " />
-                <EditText
-                    android:id="@+id/textTransmitWindowSize"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="3" />
-                <TextView
-                    android:id="@+id/textviewTransmitStatus"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="3"
-                    android:gravity="center"
-                    android:text="Closed" />
-            </LinearLayout>
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="horizontal">-->
+<!--                <CheckBox-->
+<!--                    android:id="@+id/checkboxTransmit"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:text="Transmit" />-->
+<!--                <TextView-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="4"-->
+<!--                    android:gravity="center"-->
+<!--                    android:text="Window Size: " />-->
+<!--                <EditText-->
+<!--                    android:id="@+id/textTransmitWindowSize"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="3" />-->
+<!--                <TextView-->
+<!--                    android:id="@+id/textviewTransmitStatus"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="3"-->
+<!--                    android:gravity="center"-->
+<!--                    android:text="Closed" />-->
+<!--            </LinearLayout>-->
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <EditText
-                    android:id="@+id/textIP"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2" />
-                <TextView
-                    android:layout_width="5dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text=":" />
-                <EditText
-                    android:id="@+id/textPort"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
-            </LinearLayout>
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="horizontal">-->
+<!--                <EditText-->
+<!--                    android:id="@+id/textIP"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="2" />-->
+<!--                <TextView-->
+<!--                    android:layout_width="5dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_gravity="center"-->
+<!--                    android:text=":" />-->
+<!--                <EditText-->
+<!--                    android:id="@+id/textPort"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="1" />-->
+<!--            </LinearLayout>-->
             <Button
                 android:id="@+id/buttonRecord"
                 android:layout_width="match_parent"
