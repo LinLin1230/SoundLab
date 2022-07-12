@@ -7,7 +7,7 @@ SoundLab supports playing and recording loseless pcm encoding files.
 
 ## Requirements
 
-SoundLab require recording and storage permission. 
+SoundLab requires recording and storage permissions. 
 
 ## Storage
 SoundLab will make a folder named 'SoundLab'. 
