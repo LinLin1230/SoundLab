@@ -28,21 +28,11 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
-    - uses: r0adkll/sign-android-release@v1
-      name: Sign app APK
-      # ID used to access action output
-      id: sign_app
-      with:
-        releaseDirectory: app/build/outputs/apk/release
-        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-        alias: ${{ secrets.ALIAS }}
-        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-        keyPassword: ${{ secrets.KEY_PASSWORD }}
     - name: Upload to Github Release
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{steps.sign_app.outputs.signedReleaseFile}}
+        file: app/build/outputs/apk/release
         asset_name: Soundlab_${{ steps.previoustag.outputs.tag }}.apk
         tag: ${{ steps.previoustag.outputs.tag }}
         overwrite: true
