@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     private String[] listFileNames;
 
     // Record settings
-    private static final String[] listRecordAudioSource = {"MIC","UNPROCESSED","CAMCORDER", };
+    private static final String[] listRecordAudioSource = {"MIC","UNPROCESSED","CAMCORDER" };
     private static final int[] valueRecordAudioSource = {MediaRecorder.AudioSource.MIC,MediaRecorder.AudioSource.UNPROCESSED,MediaRecorder.AudioSource.CAMCORDER};
     private int curRecordAudioSource = valueRecordAudioSource[0];
     private static final String[] listRecordChannel = {"Mono","Stereo"};
