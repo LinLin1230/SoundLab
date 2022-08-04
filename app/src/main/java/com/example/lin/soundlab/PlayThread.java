@@ -67,7 +67,7 @@ public class PlayThread implements Runnable {
         audioBufferDataSize = 4 * AudioTrack.getMinBufferSize(samplingRate, channel, encoding);
         LogThread.debugLog(1, TAG, "audioBufferSize:" + audioBufferDataSize);
         if (usage == 0) {
-            audioAttributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build();
+            audioAttributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
         }
         if (usage == 1) {
             int specific_usage = Utils.isMTK() ? AudioAttributes.USAGE_VOICE_COMMUNICATION_SIGNALLING : AudioAttributes.USAGE_VOICE_COMMUNICATION;
