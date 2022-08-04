@@ -2,15 +2,12 @@ name: Android CI
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    tags:
+      - '*'
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
     - name: set up JDK 11
@@ -19,15 +16,19 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: gradle
-
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
-    - name: Create GitHub release
-      uses: Roang-zero1/github-upload-release-artifacts-action@master
+    - name: Get tag
+      id: tag
+      uses: dawidd6/action-get-tag@v1
       with:
-        args:
-        - /app/build/outputs/apk/release/app-release-unsigned.apk
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        strip_v: false
+    - name: Upload to Github Release
+      uses: Shopify/upload-to-release@v1
+      with:
+        name: ${{steps.tag.outputs.tag}}
+        path: /app/build/outputs/apk/release/app-release-unsigned.apk
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        content-type: text/plain # Optional
