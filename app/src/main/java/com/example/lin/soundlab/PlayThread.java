@@ -7,8 +7,11 @@ import android.media.AudioTrack;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 
 public class PlayThread implements Runnable {
@@ -45,7 +48,7 @@ public class PlayThread implements Runnable {
 
     public void setup(Activity activity, String playItemPath, int playUsage, int playChannel, int playSamplingRate) {
         LogThread.debugLog(2, TAG, "PlayThread.setup()");
-        LogThread.debugLog(1, TAG, "Current Setup: path:"+playItemPath+" usage:"+ playUsage + " channel:"+playChannel+"sampling rate:"+playSamplingRate);
+        LogThread.debugLog(1, TAG, "Current Setup: path:" + playItemPath + " usage:" + playUsage + " channel:" + playChannel + "sampling rate:" + playSamplingRate);
         superActivity = activity;
         // info display
         textviewPlayStatus = superActivity.findViewById(R.id.textviewPlayStatus);
@@ -64,50 +67,51 @@ public class PlayThread implements Runnable {
         samplingRate = playSamplingRate;
         encoding = AudioFormat.ENCODING_PCM_16BIT;
 
-        audioBufferDataSize = 4*AudioTrack.getMinBufferSize(samplingRate, channel, encoding);
-        LogThread.debugLog(1, TAG, "audioBufferSize:"+audioBufferDataSize);
-        if(usage==0) {
-            audioAttributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
+        audioBufferDataSize = 4 * AudioTrack.getMinBufferSize(samplingRate, channel, encoding);
+        LogThread.debugLog(1, TAG, "audioBufferSize:" + audioBufferDataSize);
+        if (usage == 0) {
+            audioAttributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build();
         }
-        if(usage==1) {
-            audioAttributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION).setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build();
+        if (usage == 1) {
+            int specific_usage = Utils.isMTK() ? AudioAttributes.USAGE_VOICE_COMMUNICATION_SIGNALLING : AudioAttributes.USAGE_VOICE_COMMUNICATION;
+            int content_type = Utils.isMTK() ? AudioAttributes.CONTENT_TYPE_SONIFICATION : AudioAttributes.CONTENT_TYPE_UNKNOWN;
+            audioAttributes = new AudioAttributes.Builder().setUsage(specific_usage).setContentType(content_type).build();
         }
 
         audioFormat = new AudioFormat.Builder().setEncoding(encoding).setSampleRate(samplingRate).setChannelMask(channel).build();
         audioTrack = new AudioTrack.Builder().setAudioAttributes(audioAttributes).setAudioFormat(audioFormat).setBufferSizeInBytes(audioBufferDataSize).build();
-        audioBufferData = new byte[audioBufferDataSize/2];
+        audioBufferData = new byte[audioBufferDataSize / 2];
 
         try {
-            dataIS =  new DataInputStream(new FileInputStream(path));
+            dataIS = new DataInputStream(new FileInputStream(path));
             timeLeft = getTimeLeft();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-        setTextviewTimeLeft(""+timeLeft);
+        setTextviewTimeLeft("" + timeLeft);
         setTextviewPlayStatus("Ready");
     }
 
     public void start() {
         LogThread.debugLog(2, TAG, "PlayThread.play()");
-        if(isPlaying==true) {
+        if (isPlaying == true) {
             LogThread.debugLog(1, TAG, "Playing...");
-        }
-        else {
+        } else {
             isPlaying = true;
             lockPlaySettings();
 
             audioTrack.play();
             try {
-                while (isPlaying && dataIS.available()>0) {
-                    int dataISReadCount = dataIS.read(audioBufferData,0,audioBufferData.length);
-                    int audioTrackWriteCount = audioTrack.write(audioBufferData,0,audioBufferData.length);
+                while (isPlaying && dataIS.available() > 0) {
+                    int dataISReadCount = dataIS.read(audioBufferData, 0, audioBufferData.length);
+                    int audioTrackWriteCount = audioTrack.write(audioBufferData, 0, audioBufferData.length);
                     timeLeft = getTimeLeft();
 
-                    setTextviewTimeLeft(""+timeLeft);
-                    LogThread.debugLog(0, TAG, "time left: "+ timeLeft + " R/W: "+ dataISReadCount + "/" + audioTrackWriteCount);
+                    setTextviewTimeLeft("" + timeLeft);
+                    LogThread.debugLog(0, TAG, "time left: " + timeLeft + " R/W: " + dataISReadCount + "/" + audioTrackWriteCount);
                 }
-                if(dataIS.available()==0) {
+                if (dataIS.available() == 0) {
                     setTextviewPlayStatus("End");
                     unlockPlaySettings();
                 }
@@ -136,9 +140,10 @@ public class PlayThread implements Runnable {
     public void end() {
         LogThread.debugLog(2, TAG, "PlayThread.end()");
     }
+
     private int getTimeLeft() {
-        int channelRatio=1;
-        switch(channel) {
+        int channelRatio = 1;
+        switch (channel) {
             case AudioFormat.CHANNEL_OUT_MONO:
                 channelRatio = 1;
                 break;
@@ -149,7 +154,7 @@ public class PlayThread implements Runnable {
 
         int timeLeft = 0;
         try {
-            timeLeft = dataIS.available()/samplingRate/2/channelRatio;
+            timeLeft = dataIS.available() / samplingRate / 2 / channelRatio;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -185,6 +190,7 @@ public class PlayThread implements Runnable {
 //            }
 //        });
     }
+
     private void lockPlaySettings() {
         superActivity.runOnUiThread(new Runnable() {
             @Override
