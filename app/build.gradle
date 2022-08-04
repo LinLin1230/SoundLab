@@ -9,8 +9,8 @@ android {
         applicationId "com.example.lin.soundlab"
         minSdk 26
         targetSdk 30
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -25,7 +25,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
-    buildToolsVersion '33.0.0'
     lintOptions {
         abortOnError false
     }

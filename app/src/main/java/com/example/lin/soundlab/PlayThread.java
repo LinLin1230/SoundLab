@@ -7,11 +7,8 @@ import android.media.AudioTrack;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 
 public class PlayThread implements Runnable {
@@ -74,8 +71,7 @@ public class PlayThread implements Runnable {
         }
         if (usage == 1) {
             int specific_usage = Utils.isMTK() ? AudioAttributes.USAGE_VOICE_COMMUNICATION_SIGNALLING : AudioAttributes.USAGE_VOICE_COMMUNICATION;
-            int content_type = Utils.isMTK() ? AudioAttributes.CONTENT_TYPE_SONIFICATION : AudioAttributes.CONTENT_TYPE_UNKNOWN;
-            audioAttributes = new AudioAttributes.Builder().setUsage(specific_usage).setContentType(content_type).build();
+            audioAttributes = new AudioAttributes.Builder().setUsage(specific_usage).setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build();
         }
 
         audioFormat = new AudioFormat.Builder().setEncoding(encoding).setSampleRate(samplingRate).setChannelMask(channel).build();
