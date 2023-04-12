@@ -69,8 +69,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String[] listRecordChannel = {"Mono","Stereo"};
     private static final int[] valueRecordChannel = {AudioFormat.CHANNEL_IN_MONO, AudioFormat.CHANNEL_IN_STEREO};
     private int curRecordChannel = valueRecordChannel[0];
-    private static final String[] listRecordSamplingRate = {"48000","44100"};
-    private static final int[] valueRecordSamplingRate = {48000,44100};
+    private static final String[] listRecordSamplingRate = {"48000","44100","16000","8000"};
+    private static final int[] valueRecordSamplingRate = {48000,44100,16000,8000};
     private int curRecordSamplingRate = valueRecordSamplingRate[0];
 
     private int initialRecordAudioSourcePosition = 2;
