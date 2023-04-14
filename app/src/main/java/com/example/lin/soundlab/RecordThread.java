@@ -45,6 +45,9 @@ public class RecordThread implements Runnable {
     private ProgressBar progressbarVolume2;
     private TextView textviewVolume2;
 
+    private Button buttonPlayStart;
+    private Button buttonPlayReset;
+
     private CheckBox checkboxRecord;
     private Spinner spinnerRecordAudioSource;
     private Spinner spinnerRecordChannel;
@@ -69,6 +72,10 @@ public class RecordThread implements Runnable {
         textviewVolume1 = superActivity.findViewById(R.id.textviewVolume1);
         progressbarVolume2 = superActivity.findViewById(R.id.progressbarVolume2);
         textviewVolume2 = superActivity.findViewById(R.id.textviewVolume2);
+
+        // button control
+        buttonPlayStart = superActivity.findViewById(R.id.buttonPlayStart);
+        buttonPlayReset = superActivity.findViewById(R.id.buttonPlayReset);
 
         // setting
         checkboxRecord = superActivity.findViewById(R.id.checkboxRecord);
@@ -149,7 +156,7 @@ public class RecordThread implements Runnable {
                         e.printStackTrace();
                     }
                 }
-                //volume
+                // volume
                 int volumeDataLength = bufferReadResult/10;
                 if(volumeDataLength>10) {
                     if(channel == AudioFormat.CHANNEL_IN_MONO) {
@@ -164,6 +171,10 @@ public class RecordThread implements Runnable {
                         setTextviewTotalVolume(volumeWithCorrection);
                         setTextviewVolume1(volumeWithCorrection);
                         setTextviewVolume2(volumeWithCorrection);
+                        if (volumeWithCorrection>60) {
+
+                        }
+
                     }
                     if(channel == AudioFormat.CHANNEL_IN_STEREO) {
                         long sum1 = 0;
@@ -180,7 +191,8 @@ public class RecordThread implements Runnable {
                         LogThread.debugLog(0, TAG, "volume1: " + volume1WithCorrection + "  volume2: " + volume2WithCorrection);
                         setTextviewVolume1(volume1WithCorrection);
                         setTextviewVolume2(volume2WithCorrection);
-                        setTextviewTotalVolume((volume1WithCorrection+volume2)/2);
+                        setTextviewTotalVolume((volume1WithCorrection+volume2WithCorrection)/2);
+                        
                     }
                 }
 
@@ -266,6 +278,24 @@ public class RecordThread implements Runnable {
                 spinnerRecordChannel.setEnabled(true);
                 spinnerRecordSamplingRate.setEnabled(true);
                 textFileNamePrefix.setEnabled(true);
+            }
+        });
+    }
+
+    private void playStart() {
+        superActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                buttonPlayStart.performClick();
+            }
+        });
+    }
+
+    private void playReset() {
+        superActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                buttonPlayReset.performClick();
             }
         });
     }
