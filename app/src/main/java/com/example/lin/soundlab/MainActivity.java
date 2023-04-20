@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
     private PlayThread playThreadRunnable;
     private RecordThread recordThreadRunnable;
     private LogThread logThreadRunnable;
+//    private ProcessThread processThreadRunnable;
 
 
 
@@ -163,6 +164,10 @@ public class MainActivity extends AppCompatActivity {
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
+
+        // Process thread initialization
+//        processThreadRunnable = new ProcessThread();
+//        new Thread(processThreadRunnable).start();
 
         if(!(permissionCheck() && pathCheck())) {
 //            finishAffinity();
@@ -417,6 +422,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    // Process thread initialization
+//        processThreadRunnable = new ProcessThread();
+//        new Thread(processThreadRunnable).start();
 
 
     // Permission related.

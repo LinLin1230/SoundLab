@@ -90,6 +90,12 @@ public class RecordThread implements Runnable {
         audioRecord = new AudioRecord.Builder().setAudioSource(audioSource).setAudioFormat(audioFormat).setBufferSizeInBytes(audioBufferDataSize).build();
         audioBufferData = new byte[audioBufferDataSize/2];
 
+        // setup processThread
+//        ProcessThread.setBufferReadSize(audioBufferDataSize/2);
+//        ProcessThread.setSamplingRate(samplingRate);
+//        ProcessThread.setRecordChannel(channel);
+
+
 
     }
 
@@ -145,6 +151,7 @@ public class RecordThread implements Runnable {
                 if(recordChecked) {
                     try {
                         dataOS.write(audioBufferData,0,bufferReadResult);
+//                        ProcessThread.write(audioBufferData);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
