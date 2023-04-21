@@ -1,7 +1,8 @@
 package com.example.lin.soundlab;
 
 public class SonicQueue {
-    private int lengthInSecond = 60;
+    private static String TAG = "SonicQueue";
+    private int lengthInSecond = 10;
     private int lengthInFrame = lengthInSecond*48000;
     private short[] queue;
     private int pointerHead = 0;
@@ -11,22 +12,38 @@ public class SonicQueue {
         queue = new short[lengthInFrame];
     }
 
+    public SonicQueue(int length) {
+        lengthInFrame = length;
+        queue = new short[lengthInFrame];
+    }
+
     // write byte[]
     public boolean write(byte[] data) {
-        for(int i=0;i<data.length;i+=2) {
-            queue[pointerTail] = (short)(data[i] & 0xff | data[i+1] << 8);
-            pointerTail = (pointerTail + 1) % lengthInFrame;
+        if (getLength()+(data.length/2) >= getCapacity()) {
+            return false;
         }
-        return true;
+        else {
+            for(int i=0;i<data.length;i+=2) {
+                queue[pointerTail] = (short)(data[i] & 0xff | data[i+1] << 8);
+                pointerTail = (pointerTail + 1) % lengthInFrame;
+            }
+            return true;
+        }
     }
 
     // write short[]
     public boolean write(short[] data) {
-        for(int i=0;i<data.length;i++) {
-            queue[pointerTail] = data[i];
-            pointerTail = (pointerTail + 1) % lengthInFrame;
+        if (getLength()+(data.length) >= getCapacity()) {
+            return false;
         }
-        return true;
+        else {
+            for(int i=0;i<data.length;i++) {
+                queue[pointerTail] = data[i];
+                pointerTail = (pointerTail + 1) % lengthInFrame;
+            }
+            return true;
+        }
+
     }
 
     // read byte[]
@@ -72,5 +89,11 @@ public class SonicQueue {
         len = len<0?len+lengthInFrame:len;
         return len;
     }
+
+    // get current data capacity in short
+    public int getCapacity() {
+        return lengthInFrame;
+    }
+
 
 }

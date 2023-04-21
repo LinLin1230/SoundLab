@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int[] valuePlaySamplingRate = {48000,44100,16000,8000};
     private int curPlaySamplingRate = valuePlaySamplingRate[0];
 
-    private int initialPlayUsagePosition = 0;
+    private final int initialPlayUsagePosition = 0;
     private int initialPlayChannelPosition = 1;
     private int initialPlaySamplingRatePosition = 0;
 
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
     private PlayThread playThreadRunnable;
     private RecordThread recordThreadRunnable;
     private LogThread logThreadRunnable;
-//    private ProcessThread processThreadRunnable;
+    private ProcessThread processThreadRunnable;
 
 
 
@@ -421,11 +421,13 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // Process thread initialization
+        processThreadRunnable = new ProcessThread();
+        new Thread(processThreadRunnable).start();
     }
 
-    // Process thread initialization
-//        processThreadRunnable = new ProcessThread();
-//        new Thread(processThreadRunnable).start();
+
 
 
     // Permission related.
@@ -575,11 +577,16 @@ public class MainActivity extends AppCompatActivity {
     private void setRecordThread() {
 
         recordThreadRunnable.setup(this,curRecordItemPath, curRecordAudioSource, curRecordChannel, curRecordSamplingRate, isRecordChecked);
+        setProcessThread();
     }
 
     //set log thread
     private void setLogThread() {
         logThreadRunnable.setup(this, curDisplayLogLevel);
+    }
+
+    private void setProcessThread() {
+        processThreadRunnable.setup(this, curRecordChannel, curRecordSamplingRate);
     }
 
 
