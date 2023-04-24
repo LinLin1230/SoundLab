@@ -28,6 +28,9 @@ public class ProcessThread implements Runnable {
     private ProgressBar progressbarVolume2;
     private TextView textviewVolume2;
 
+    private ProgressBar progressbarBufferCapacity;
+    private TextView textviewBufferCapacity;
+
 
     @Override
     public void run() {
@@ -58,13 +61,18 @@ public class ProcessThread implements Runnable {
         textviewVolume1 = superActivity.findViewById(R.id.textviewVolume1);
         progressbarVolume2 = superActivity.findViewById(R.id.progressbarVolume2);
         textviewVolume2 = superActivity.findViewById(R.id.textviewVolume2);
+
+        progressbarBufferCapacity = superActivity.findViewById(R.id.progressbarBufferCapacity);
+        textviewBufferCapacity = superActivity.findViewById(R.id.textviewBufferCapacity);
     }
 
     private void process() {
         if (sonicQueue.getLength() < processBufferDataSize) {
             return;
         }
-        LogThread.debugLog(0, TAG, "Buffer usage: " + (double)sonicQueue.getLength()/sonicQueue.getCapacity());
+        double bufferCapacity = (double)sonicQueue.getLength()/sonicQueue.getCapacity();
+        LogThread.debugLog(0, TAG, "Buffer usage: " + bufferCapacity);
+        setBufferCapacity(bufferCapacity);
         read(processBufferData);
 
         if (channel == AudioFormat.CHANNEL_IN_MONO) {
@@ -76,9 +84,9 @@ public class ProcessThread implements Runnable {
             double volume = 10 * Math.log10(mean);
             double volumeWithCorrection = volumeCorrection(volume);
             LogThread.debugLog(0, TAG, "volume: " + volumeWithCorrection);
-            setTextviewTotalVolume(volumeWithCorrection);
-            setTextviewVolume1(volumeWithCorrection);
-            setTextviewVolume2(volumeWithCorrection);
+            setTotalVolume(volumeWithCorrection);
+            setVolume1(volumeWithCorrection);
+            setVolume2(volumeWithCorrection);
         }
         if (channel == AudioFormat.CHANNEL_IN_STEREO) {
             long sum1 = 0;
@@ -93,9 +101,9 @@ public class ProcessThread implements Runnable {
             double volume1WithCorrection = volumeCorrection(volume1);
             double volume2WithCorrection = volumeCorrection(volume2);
             LogThread.debugLog(0, TAG, "volume1: " + volume1WithCorrection + "  volume2: " + volume2WithCorrection);
-            setTextviewVolume1(volume1WithCorrection);
-            setTextviewVolume2(volume2WithCorrection);
-            setTextviewTotalVolume((volume1WithCorrection+volume2)/2);
+            setVolume1(volume1WithCorrection);
+            setVolume2(volume2WithCorrection);
+            setTotalVolume((volume1WithCorrection+volume2)/2);
         }
 
     }
@@ -133,7 +141,7 @@ public class ProcessThread implements Runnable {
 
 
 
-    private void setTextviewTotalVolume(double volume) {
+    private void setTotalVolume(double volume) {
         superActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -142,7 +150,7 @@ public class ProcessThread implements Runnable {
         });
     }
 
-    private void setTextviewVolume1(double volume) {
+    private void setVolume1(double volume) {
         superActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -152,7 +160,7 @@ public class ProcessThread implements Runnable {
         });
     }
 
-    private void setTextviewVolume2(double volume) {
+    private void setVolume2(double volume) {
         superActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -165,6 +173,16 @@ public class ProcessThread implements Runnable {
     private double volumeCorrection(double volume) {
 //        return 1.037*volume-7.191;
         return volume;
+    }
+
+    private void setBufferCapacity(double bufferCapacity) {
+        superActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textviewBufferCapacity.setText(String.format(Locale.US,"%.2f%",bufferCapacity));
+                progressbarBufferCapacity.setProgress((int)bufferCapacity);
+            }
+        });
     }
 
 }

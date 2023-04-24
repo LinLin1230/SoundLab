@@ -63,8 +63,8 @@ public class MainActivity extends AppCompatActivity {
     private String[] listFileNames;
 
     // Record settings
-    private static final String[] listRecordAudioSource = {"MIC","UNPROCESSED","CAMCORDER"};
-    private static final int[] valueRecordAudioSource = {MediaRecorder.AudioSource.MIC,MediaRecorder.AudioSource.UNPROCESSED,MediaRecorder.AudioSource.CAMCORDER};
+    private static final String[] listRecordAudioSource = {"MIC","UNPROCESSED","CAMCORDER","COMMUNICATION","RECOGNITION"};
+    private static final int[] valueRecordAudioSource = {MediaRecorder.AudioSource.MIC,MediaRecorder.AudioSource.UNPROCESSED,MediaRecorder.AudioSource.CAMCORDER,MediaRecorder.AudioSource.VOICE_COMMUNICATION,MediaRecorder.AudioSource.VOICE_RECOGNITION};
     private int curRecordAudioSource = valueRecordAudioSource[0];
     private static final String[] listRecordChannel = {"Mono","Stereo"};
     private static final int[] valueRecordChannel = {AudioFormat.CHANNEL_IN_MONO, AudioFormat.CHANNEL_IN_STEREO};
@@ -73,9 +73,9 @@ public class MainActivity extends AppCompatActivity {
     private static final int[] valueRecordSamplingRate = {48000,44100,16000,8000};
     private int curRecordSamplingRate = valueRecordSamplingRate[0];
 
-    private int initialRecordAudioSourcePosition = 2;
-    private int initialRecordChannelPosition = 1;
-    private int initialSamplingRatePosition = 0;
+    private int initialRecordAudioSourcePosition = 4;
+    private int initialRecordChannelPosition = 0;
+    private int initialSamplingRatePosition = 3;
 
     private boolean initialCheckboxIsChecked = false;
 
