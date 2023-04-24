@@ -70,11 +70,7 @@ public class ProcessThread implements Runnable {
         if (sonicQueue.getLength() < processBufferDataSize) {
             return;
         }
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
         double bufferUsage = (double)sonicQueue.getLength()/sonicQueue.getCapacity();
         LogThread.debugLog(0, TAG, "Buffer usage: " + bufferUsage);
         setBufferUsage(bufferUsage);
