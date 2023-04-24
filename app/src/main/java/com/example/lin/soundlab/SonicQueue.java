@@ -2,7 +2,7 @@ package com.example.lin.soundlab;
 
 public class SonicQueue {
     private static String TAG = "SonicQueue";
-    private int lengthInSecond = 10;
+    private int lengthInSecond = 60;
     private int lengthInFrame = lengthInSecond*48000;
     private short[] queue;
     private int pointerHead = 0;
