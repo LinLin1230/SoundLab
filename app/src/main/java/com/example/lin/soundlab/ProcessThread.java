@@ -2,6 +2,7 @@ package com.example.lin.soundlab;
 
 import android.app.Activity;
 import android.media.AudioFormat;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -30,6 +31,10 @@ public class ProcessThread implements Runnable {
 
     private ProgressBar progressbarBufferUsage;
     private TextView textviewBufferUsage;
+
+    private Button buttonPlayStart;
+    private Button buttonPlayReset;
+    private int volumeThreshold = 65;
 
 
     @Override
@@ -62,8 +67,13 @@ public class ProcessThread implements Runnable {
         progressbarVolume2 = superActivity.findViewById(R.id.progressbarVolume2);
         textviewVolume2 = superActivity.findViewById(R.id.textviewVolume2);
 
+        // buffer usage info
         progressbarBufferUsage = superActivity.findViewById(R.id.progressbarBufferUsage);
         textviewBufferUsage = superActivity.findViewById(R.id.textviewBufferUsage);
+
+        // button control
+        buttonPlayStart = superActivity.findViewById(R.id.buttonPlayStart);
+        buttonPlayReset = superActivity.findViewById(R.id.buttonPlayReset);
     }
 
     private void process() {
@@ -88,6 +98,10 @@ public class ProcessThread implements Runnable {
             setTotalVolume(volumeWithCorrection);
             setVolume1(volumeWithCorrection);
             setVolume2(volumeWithCorrection);
+
+            if (volume>volumeThreshold) {
+                playStart();
+            }
         }
         if (channel == AudioFormat.CHANNEL_IN_STEREO) {
             long sum1 = 0;
@@ -95,6 +109,7 @@ public class ProcessThread implements Runnable {
             for (int i = 0; i < processBufferDataSize;i=i+2) {
                 sum1 += Math.pow(processBufferData[i],2);
                 sum2 += Math.pow(processBufferData[i+1],2);
+                LogThread.debugLog(0, TAG, "short1: " + processBufferData[i] + "  short2: " + processBufferData[i+1]);
             }
 
             double volume1 = 10 * Math.log10(sum1 / (double) processBufferDataSize*2);
@@ -105,6 +120,10 @@ public class ProcessThread implements Runnable {
             setVolume1(volume1WithCorrection);
             setVolume2(volume2WithCorrection);
             setTotalVolume((volume1WithCorrection+volume2)/2);
+
+            if (volume1>volumeThreshold | volume2>volumeThreshold) {
+                playStart();
+            }
         }
 
     }
@@ -182,6 +201,24 @@ public class ProcessThread implements Runnable {
             public void run() {
                 textviewBufferUsage.setText(String.format(Locale.US,"%.2f/%s",bufferUsage*100, "%"));
                 progressbarBufferUsage.setProgress((int)(bufferUsage*100));
+            }
+        });
+    }
+
+    private void playStart() {
+        superActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                buttonPlayStart.performClick();
+            }
+        });
+    }
+
+    private void playReset() {
+        superActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                buttonPlayReset.performClick();
             }
         });
     }
