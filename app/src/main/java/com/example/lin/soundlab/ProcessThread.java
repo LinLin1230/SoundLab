@@ -119,14 +119,14 @@ public class ProcessThread implements Runnable {
                 LogThread.debugLog(0, TAG, "short1: " + processBufferData[i] + "  short2: " + processBufferData[i+1]);
             }
 
-            double volume1 = 10 * Math.log10(sum1 / (double) processBufferDataSize*2);
-            double volume2 = 10 * Math.log10(sum2 / (double) processBufferDataSize*2);
+            double volume1 = 10 * Math.log10(((double) sum1 / processBufferDataSize)*2);
+            double volume2 = 10 * Math.log10(((double) sum2 / processBufferDataSize)*2);
             double volume1WithCorrection = volumeCorrection(volume1);
             double volume2WithCorrection = volumeCorrection(volume2);
             LogThread.debugLog(0, TAG, "volume1: " + volume1WithCorrection + "  volume2: " + volume2WithCorrection);
             setVolume1(volume1WithCorrection);
             setVolume2(volume2WithCorrection);
-            setTotalVolume((volume1WithCorrection+volume2)/2);
+            setTotalVolume((volume1WithCorrection+volume2WithCorrection)/2);
 
             if (volume1>volumeThreshold | volume2>volumeThreshold) {
                 playStart();
