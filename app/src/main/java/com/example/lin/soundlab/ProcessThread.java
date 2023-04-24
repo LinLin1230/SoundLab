@@ -70,12 +70,18 @@ public class ProcessThread implements Runnable {
         if (sonicQueue.getLength() < processBufferDataSize) {
             return;
         }
+        // try to read data from buffer
+        boolean isReadSuccess = read(processBufferData);
+        if (!isReadSuccess) {
+            return;
+        }
 
+        // update buffer usage
         double bufferUsage = (double)sonicQueue.getLength()/sonicQueue.getCapacity();
         LogThread.debugLog(0, TAG, "Buffer usage: " + bufferUsage);
         setBufferUsage(bufferUsage);
-        read(processBufferData);
 
+        // MONO mode
         if (channel == AudioFormat.CHANNEL_IN_MONO) {
             long sum = 0;
             for (int i = 0; i < processBufferDataSize;i=i+1) {
@@ -89,6 +95,7 @@ public class ProcessThread implements Runnable {
             setVolume1(volumeWithCorrection);
             setVolume2(volumeWithCorrection);
         }
+        // STEREO mode
         if (channel == AudioFormat.CHANNEL_IN_STEREO) {
             long sum1 = 0;
             long sum2 = 0;
