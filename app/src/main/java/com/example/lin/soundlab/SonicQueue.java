@@ -24,7 +24,7 @@ public class SonicQueue {
         }
         else {
             for(int i=0;i<data.length;i+=2) {
-                queue[pointerTail] = (short)(data[i] & 0xff | data[i+1] << 8);
+                queue[pointerTail] = (short)(data[i] & 0x00ff | data[i+1] << 8);
                 pointerTail = (pointerTail + 1) % lengthInFrame;
             }
             return true;
