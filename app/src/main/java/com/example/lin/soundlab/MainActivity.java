@@ -73,9 +73,9 @@ public class MainActivity extends AppCompatActivity {
     private static final int[] valueRecordSamplingRate = {48000,44100,16000,8000};
     private int curRecordSamplingRate = valueRecordSamplingRate[0];
 
-    private int initialRecordAudioSourcePosition = 4;
-    private int initialRecordChannelPosition = 0;
-    private int initialSamplingRatePosition = 3;
+    private int initialRecordAudioSourcePosition = 2;
+    private int initialRecordChannelPosition = 1;
+    private int initialSamplingRatePosition = 0;
 
     private boolean initialCheckboxIsChecked = false;
 
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String[] listDisplayLogLevel = {"Verbose","Debug","Info","Warn","Error"};
     private static final int[] valueDisplayLogLevel = {0,1,2,3,4};
     private int curDisplayLogLevel = valueDisplayLogLevel[0];
-    private int initialDisplayLogLevelPosition = 0;
+    private int initialDisplayLogLevelPosition = 4;
 
     // Thread runnable.
     private PlayThread playThreadRunnable;

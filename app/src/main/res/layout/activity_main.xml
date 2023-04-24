@@ -284,15 +284,15 @@
                 android:text="Buffer capacity:  "/>
 
             <ProgressBar
-                android:id="@+id/progressbarBufferCapacity"
+                android:id="@+id/progressbarBufferUsage"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="4"
+                android:layout_weight="3"
                 android:layout_gravity = "center"
                 style="?android:attr/progressBarStyleHorizontal"
                 android:max="100"/>
             <TextView
-                android:id="@+id/textviewBufferCapacity"
+                android:id="@+id/textviewBufferUsage"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

@@ -28,8 +28,8 @@ public class ProcessThread implements Runnable {
     private ProgressBar progressbarVolume2;
     private TextView textviewVolume2;
 
-    private ProgressBar progressbarBufferCapacity;
-    private TextView textviewBufferCapacity;
+    private ProgressBar progressbarBufferUsage;
+    private TextView textviewBufferUsage;
 
 
     @Override
@@ -62,17 +62,22 @@ public class ProcessThread implements Runnable {
         progressbarVolume2 = superActivity.findViewById(R.id.progressbarVolume2);
         textviewVolume2 = superActivity.findViewById(R.id.textviewVolume2);
 
-        progressbarBufferCapacity = superActivity.findViewById(R.id.progressbarBufferCapacity);
-        textviewBufferCapacity = superActivity.findViewById(R.id.textviewBufferCapacity);
+        progressbarBufferUsage = superActivity.findViewById(R.id.progressbarBufferUsage);
+        textviewBufferUsage = superActivity.findViewById(R.id.textviewBufferUsage);
     }
 
     private void process() {
         if (sonicQueue.getLength() < processBufferDataSize) {
             return;
         }
-        double bufferCapacity = (double)sonicQueue.getLength()/sonicQueue.getCapacity();
-        LogThread.debugLog(0, TAG, "Buffer usage: " + bufferCapacity);
-        setBufferCapacity(bufferCapacity);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        double bufferUsage = (double)sonicQueue.getLength()/sonicQueue.getCapacity();
+        LogThread.debugLog(0, TAG, "Buffer usage: " + bufferUsage);
+        setBufferUsage(bufferUsage);
         read(processBufferData);
 
         if (channel == AudioFormat.CHANNEL_IN_MONO) {
@@ -175,12 +180,12 @@ public class ProcessThread implements Runnable {
         return volume;
     }
 
-    private void setBufferCapacity(double bufferCapacity) {
+    private void setBufferUsage(double bufferUsage) {
         superActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                textviewBufferCapacity.setText(String.format(Locale.US,"%.2f%",bufferCapacity));
-                progressbarBufferCapacity.setProgress((int)bufferCapacity);
+                textviewBufferUsage.setText(String.format(Locale.US,"%.2f/%s",bufferUsage*100, "%"));
+                progressbarBufferUsage.setProgress((int)(bufferUsage*100));
             }
         });
     }
