@@ -22,11 +22,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:orientation="horizontal">
-<!--                <Button-->
-<!--                    android:id="@+id/buttonRefreshFilelist"-->
-<!--                    android:layout_width="35dp"-->
-<!--                    android:layout_height="40dp"-->
-<!--                    android:text=""/>-->
+                <!--                <Button-->
+                <!--                    android:id="@+id/buttonRefreshFilelist"-->
+                <!--                    android:layout_width="35dp"-->
+                <!--                    android:layout_height="40dp"-->
+                <!--                    android:text=""/>-->
                 <Spinner
                     android:id="@+id/spinnerFileList"
                     android:layout_width="match_parent"
@@ -147,56 +147,56 @@
             </LinearLayout>
 
 
-<!--            <LinearLayout-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:orientation="horizontal">-->
-<!--                <CheckBox-->
-<!--                    android:id="@+id/checkboxTransmit"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_weight="1"-->
-<!--                    android:text="Transmit" />-->
-<!--                <TextView-->
-<!--                    android:layout_width="0dp"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_weight="4"-->
-<!--                    android:gravity="center"-->
-<!--                    android:text="Window Size: " />-->
-<!--                <EditText-->
-<!--                    android:id="@+id/textTransmitWindowSize"-->
-<!--                    android:layout_width="0dp"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_weight="3" />-->
-<!--                <TextView-->
-<!--                    android:id="@+id/textviewTransmitStatus"-->
-<!--                    android:layout_width="0dp"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_weight="3"-->
-<!--                    android:gravity="center"-->
-<!--                    android:text="Closed" />-->
-<!--            </LinearLayout>-->
+            <!--            <LinearLayout-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:orientation="horizontal">-->
+            <!--                <CheckBox-->
+            <!--                    android:id="@+id/checkboxTransmit"-->
+            <!--                    android:layout_width="wrap_content"-->
+            <!--                    android:layout_height="wrap_content"-->
+            <!--                    android:layout_weight="1"-->
+            <!--                    android:text="Transmit" />-->
+            <!--                <TextView-->
+            <!--                    android:layout_width="0dp"-->
+            <!--                    android:layout_height="wrap_content"-->
+            <!--                    android:layout_weight="4"-->
+            <!--                    android:gravity="center"-->
+            <!--                    android:text="Window Size: " />-->
+            <!--                <EditText-->
+            <!--                    android:id="@+id/textTransmitWindowSize"-->
+            <!--                    android:layout_width="0dp"-->
+            <!--                    android:layout_height="wrap_content"-->
+            <!--                    android:layout_weight="3" />-->
+            <!--                <TextView-->
+            <!--                    android:id="@+id/textviewTransmitStatus"-->
+            <!--                    android:layout_width="0dp"-->
+            <!--                    android:layout_height="wrap_content"-->
+            <!--                    android:layout_weight="3"-->
+            <!--                    android:gravity="center"-->
+            <!--                    android:text="Closed" />-->
+            <!--            </LinearLayout>-->
 
-<!--            <LinearLayout-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:orientation="horizontal">-->
-<!--                <EditText-->
-<!--                    android:id="@+id/textIP"-->
-<!--                    android:layout_width="0dp"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_weight="2" />-->
-<!--                <TextView-->
-<!--                    android:layout_width="5dp"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_gravity="center"-->
-<!--                    android:text=":" />-->
-<!--                <EditText-->
-<!--                    android:id="@+id/textPort"-->
-<!--                    android:layout_width="0dp"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_weight="1" />-->
-<!--            </LinearLayout>-->
+            <!--            <LinearLayout-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:orientation="horizontal">-->
+            <!--                <EditText-->
+            <!--                    android:id="@+id/textIP"-->
+            <!--                    android:layout_width="0dp"-->
+            <!--                    android:layout_height="wrap_content"-->
+            <!--                    android:layout_weight="2" />-->
+            <!--                <TextView-->
+            <!--                    android:layout_width="5dp"-->
+            <!--                    android:layout_height="wrap_content"-->
+            <!--                    android:layout_gravity="center"-->
+            <!--                    android:text=":" />-->
+            <!--                <EditText-->
+            <!--                    android:id="@+id/textPort"-->
+            <!--                    android:layout_width="0dp"-->
+            <!--                    android:layout_height="wrap_content"-->
+            <!--                    android:layout_weight="1" />-->
+            <!--            </LinearLayout>-->
             <Button
                 android:id="@+id/buttonRecord"
                 android:layout_width="match_parent"
@@ -232,6 +232,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="4"
+                        android:layout_gravity = "center"
                         style="?android:attr/progressBarStyleHorizontal"
                         android:max="100"/>
                     <TextView
@@ -253,6 +254,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="4"
+                        android:layout_gravity = "center"
                         style="?android:attr/progressBarStyleHorizontal"
                         android:max="100"/>
                     <TextView
@@ -270,6 +272,37 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="Buffer capacity:  "/>
+
+            <ProgressBar
+                android:id="@+id/progressbarBufferUsage"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:layout_gravity = "center"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:max="100"/>
+            <TextView
+                android:id="@+id/textviewBufferUsage"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="00%"
+                android:textSize="15dp" />
+
+
+        </LinearLayout>
+
         <TextView
             android:id="@+id/textviewTotalVolume"
             android:layout_width="match_parent"
@@ -281,7 +314,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">>
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"

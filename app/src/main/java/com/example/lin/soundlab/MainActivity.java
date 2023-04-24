@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int[] valuePlaySamplingRate = {48000,44100,16000,8000};
     private int curPlaySamplingRate = valuePlaySamplingRate[0];
 
-    private int initialPlayUsagePosition = 0;
+    private final int initialPlayUsagePosition = 0;
     private int initialPlayChannelPosition = 1;
     private int initialPlaySamplingRatePosition = 0;
 
@@ -63,14 +63,14 @@ public class MainActivity extends AppCompatActivity {
     private String[] listFileNames;
 
     // Record settings
-    private static final String[] listRecordAudioSource = {"MIC","UNPROCESSED","CAMCORDER"};
-    private static final int[] valueRecordAudioSource = {MediaRecorder.AudioSource.MIC,MediaRecorder.AudioSource.UNPROCESSED,MediaRecorder.AudioSource.CAMCORDER};
+    private static final String[] listRecordAudioSource = {"MIC","UNPROCESSED","CAMCORDER","COMMUNICATION","RECOGNITION"};
+    private static final int[] valueRecordAudioSource = {MediaRecorder.AudioSource.MIC,MediaRecorder.AudioSource.UNPROCESSED,MediaRecorder.AudioSource.CAMCORDER,MediaRecorder.AudioSource.VOICE_COMMUNICATION,MediaRecorder.AudioSource.VOICE_RECOGNITION};
     private int curRecordAudioSource = valueRecordAudioSource[0];
     private static final String[] listRecordChannel = {"Mono","Stereo"};
     private static final int[] valueRecordChannel = {AudioFormat.CHANNEL_IN_MONO, AudioFormat.CHANNEL_IN_STEREO};
     private int curRecordChannel = valueRecordChannel[0];
-    private static final String[] listRecordSamplingRate = {"48000","44100"};
-    private static final int[] valueRecordSamplingRate = {48000,44100};
+    private static final String[] listRecordSamplingRate = {"48000","44100","16000","8000"};
+    private static final int[] valueRecordSamplingRate = {48000,44100,16000,8000};
     private int curRecordSamplingRate = valueRecordSamplingRate[0];
 
     private int initialRecordAudioSourcePosition = 2;
@@ -88,12 +88,13 @@ public class MainActivity extends AppCompatActivity {
     private static final String[] listDisplayLogLevel = {"Verbose","Debug","Info","Warn","Error"};
     private static final int[] valueDisplayLogLevel = {0,1,2,3,4};
     private int curDisplayLogLevel = valueDisplayLogLevel[0];
-    private int initialDisplayLogLevelPosition = 0;
+    private int initialDisplayLogLevelPosition = 4;
 
     // Thread runnable.
     private PlayThread playThreadRunnable;
     private RecordThread recordThreadRunnable;
     private LogThread logThreadRunnable;
+    private ProcessThread processThreadRunnable;
 
 
 
@@ -163,6 +164,10 @@ public class MainActivity extends AppCompatActivity {
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
+
+        // Process thread initialization
+//        processThreadRunnable = new ProcessThread();
+//        new Thread(processThreadRunnable).start();
 
         if(!(permissionCheck() && pathCheck())) {
 //            finishAffinity();
@@ -416,7 +421,13 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // Process thread initialization
+        processThreadRunnable = new ProcessThread();
+        new Thread(processThreadRunnable).start();
     }
+
+
 
 
     // Permission related.
@@ -566,11 +577,16 @@ public class MainActivity extends AppCompatActivity {
     private void setRecordThread() {
 
         recordThreadRunnable.setup(this,curRecordItemPath, curRecordAudioSource, curRecordChannel, curRecordSamplingRate, isRecordChecked);
+        setProcessThread();
     }
 
     //set log thread
     private void setLogThread() {
         logThreadRunnable.setup(this, curDisplayLogLevel);
+    }
+
+    private void setProcessThread() {
+        processThreadRunnable.setup(this, curRecordChannel, curRecordSamplingRate);
     }
 
 
