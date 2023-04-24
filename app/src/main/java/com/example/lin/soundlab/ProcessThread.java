@@ -102,16 +102,17 @@ public class ProcessThread implements Runnable {
             for (int i = 0; i < processBufferDataSize;i=i+2) {
                 sum1 += Math.pow(processBufferData[i],2);
                 sum2 += Math.pow(processBufferData[i+1],2);
+
             }
 
-            double volume1 = 10 * Math.log10(sum1 / (double) processBufferDataSize*2);
-            double volume2 = 10 * Math.log10(sum2 / (double) processBufferDataSize*2);
+            double volume1 = 10 * Math.log10(((double) sum1 / processBufferDataSize)*2);
+            double volume2 = 10 * Math.log10(((double) sum2 / processBufferDataSize)*2);
             double volume1WithCorrection = volumeCorrection(volume1);
             double volume2WithCorrection = volumeCorrection(volume2);
             LogThread.debugLog(0, TAG, "volume1: " + volume1WithCorrection + "  volume2: " + volume2WithCorrection);
             setVolume1(volume1WithCorrection);
             setVolume2(volume2WithCorrection);
-            setTotalVolume((volume1WithCorrection+volume2)/2);
+            setTotalVolume((volume1WithCorrection+volume2WithCorrection)/2);
         }
 
     }
