@@ -63,8 +63,15 @@ Even the recording checkbox is not checked, the recording will still work just w
 
 Two recording channel volume display gives a volume in dB. However, it is not calibrated, the volume number is for reference only. 
 For stereo recording, two channels will be displayed separately. 
-For mono chcannel recording, two channels will be the same. 
+For mono channel recording, two channels will be the same. 
 The bottom value number is the average volume of two channels.
+
+### Buffer Usage
+
+Tho program record and save data to file immediately. The same data will also be sent to a buffer for further process like volume calculation.
+Buffer usage indicates the usage of buffer. From empty 0% to full 100%.
+If it increase continuously, it means the data processing speed is lower than data generation speed.
+When the buffer if full (nearly 100%). New data will not be able to added to the buffer.
 
 ### Log
 
