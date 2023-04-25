@@ -7,6 +7,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.Locale;
+import biz.source_code.dsp.filter.FilterPassType;
+import biz.source_code.dsp.filter.IirFilter;
+import biz.source_code.dsp.filter.IirFilterDesignExstrom;
+import biz.source_code.dsp.filter.IirFilterCoefficients;
 
 public class ProcessThread implements Runnable {
     private static final String TAG = "SoundLabProcessThread";
@@ -19,7 +23,11 @@ public class ProcessThread implements Runnable {
     private static int processFrequency = 10;
     private static int samplingRate = 48000;
     private static int processBufferDataSize = samplingRate/processFrequency;
-    private static short[] processBufferData = new short[processBufferDataSize];;
+    private static short[] processBufferData = new short[processBufferDataSize];
+    private static double[] processBufferDataDouble = new double[processBufferDataSize];
+    private static double[] processBufferDataDoubleL = new double[processBufferDataSize];
+    private static double[] processBufferDataDoubleR = new double[processBufferDataSize];
+
     private static int channel;
 
     private Activity superActivity;
@@ -32,9 +40,12 @@ public class ProcessThread implements Runnable {
     private ProgressBar progressbarBufferUsage;
     private TextView textviewBufferUsage;
 
+
+
     private Button buttonPlayStart;
     private Button buttonPlayReset;
-    private int volumeThreshold = 65;
+    private TextView textviewPlayStatus;
+    private int volumeThreshold = 40;
 
 
     @Override
@@ -74,6 +85,7 @@ public class ProcessThread implements Runnable {
         // button control
         buttonPlayStart = superActivity.findViewById(R.id.buttonPlayStart);
         buttonPlayReset = superActivity.findViewById(R.id.buttonPlayReset);
+        textviewPlayStatus = superActivity.findViewById(R.id.textviewPlayStatus);
     }
 
     private void process() {
@@ -91,11 +103,21 @@ public class ProcessThread implements Runnable {
         LogThread.debugLog(0, TAG, "Buffer usage: " + bufferUsage);
         setBufferUsage(bufferUsage);
 
+
+
         // MONO mode
         if (channel == AudioFormat.CHANNEL_IN_MONO) {
+
+            // highpass filter 15000 Hz at 48000 Hz sampling rate
+            for (int i=0;i<processBufferDataSize;i++) {
+                processBufferDataDouble[i] = (double) processBufferData[i];
+            }
+            double[] processBufferDataDoubleAfterFilter = IIRFilter(processBufferDataDouble, FilterPassType.highpass, 5, 15/48.0, 15/48.0);
+
+
             long sum = 0;
-            for (int i = 0; i < processBufferDataSize;i=i+1) {
-                sum += Math.pow(processBufferData[i],2);
+            for (int i = 0; i < processBufferDataSize;i++) {
+                sum += Math.pow(processBufferDataDoubleAfterFilter[i],2);
             }
             double mean = sum / (double) processBufferDataSize;
             double volume = 10 * Math.log10(mean);
@@ -105,17 +127,28 @@ public class ProcessThread implements Runnable {
             setVolume1(volumeWithCorrection);
             setVolume2(volumeWithCorrection);
 
+            tryPlayReset();
+
             if (volume>volumeThreshold) {
-                playStart();
+                replyZC();
             }
         }
         // STEREO mode
         if (channel == AudioFormat.CHANNEL_IN_STEREO) {
+
+            // highpass filter 15000 Hz at 48000 Hz sampling rate
+            for (int i=0;i<processBufferDataSize/2;i++) {
+                processBufferDataDoubleL[i] = (double) processBufferData[2*i];
+                processBufferDataDoubleR[i] = (double) processBufferData[2*i+1];
+            }
+            double[] processBufferDataDoubleAfterFilterL = IIRFilter(processBufferDataDoubleL, FilterPassType.highpass, 5, 15/48.0, 15/48.0);
+            double[] processBufferDataDoubleAfterFilterR = IIRFilter(processBufferDataDoubleR, FilterPassType.highpass, 5, 15/48.0, 15/48.0);
+
             long sum1 = 0;
             long sum2 = 0;
-            for (int i = 0; i < processBufferDataSize;i=i+2) {
-                sum1 += Math.pow(processBufferData[i],2);
-                sum2 += Math.pow(processBufferData[i+1],2);
+            for (int i = 0; i < processBufferDataSize/2;i++) {
+                sum1 += Math.pow(processBufferDataDoubleAfterFilterL[i],2);
+                sum2 += Math.pow(processBufferDataDoubleAfterFilterR[i],2);
 //                LogThread.debugLog(0, TAG, "short1: " + processBufferData[i] + "  short2: " + processBufferData[i+1]);
             }
 
@@ -128,8 +161,12 @@ public class ProcessThread implements Runnable {
             setVolume2(volume2WithCorrection);
             setTotalVolume((volume1WithCorrection+volume2WithCorrection)/2);
 
+
+
+
+            tryPlayReset();
             if (volume1>volumeThreshold | volume2>volumeThreshold) {
-                playStart();
+                replyZC();
             }
         }
 
@@ -212,6 +249,34 @@ public class ProcessThread implements Runnable {
         });
     }
 
+    private void replyZC() {
+        superActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String curPlayStatus = (String) textviewPlayStatus.getText();
+                if (curPlayStatus.equals("Ready")) {
+                    buttonPlayStart.performClick();
+                }
+                if (curPlayStatus.equals("End")) {
+                    buttonPlayReset.performClick();
+                    buttonPlayStart.performClick();
+                }
+            }
+        });
+    }
+
+    private void tryPlayReset() {
+        superActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String curPlayStatus = (String) textviewPlayStatus.getText();
+                if (curPlayStatus.equals("End")) {
+                    buttonPlayReset.performClick();
+                }
+            }
+        });
+    }
+
     private void playStart() {
         superActivity.runOnUiThread(new Runnable() {
             @Override
@@ -228,6 +293,35 @@ public class ProcessThread implements Runnable {
                 buttonPlayReset.performClick();
             }
         });
+    }
+
+    private double[] IIRFilter(double[] inData, FilterPassType filterType, int filterOrder, double fcf1, double fcf2) {
+        IirFilterCoefficients coefficients = IirFilterDesignExstrom.design(filterType, filterOrder, fcf1, fcf2);
+        double[] a = coefficients.a;
+        double[] b = coefficients.b;
+        double[] in = new double[b.length];
+        double[] out = new double[a.length-1];
+        double[] outData = new double[inData.length];
+
+        for (int i=0;i<inData.length;i++) {
+            System.arraycopy(in,0,in,1,in.length-1);
+            in[0] = inData[i];
+
+            double y = 0;
+            for (int j=0;j<b.length;j++) {
+                y += in[j]*b[j];
+            }
+            for (int j=0;j<a.length-1;j++) {
+                y -= out[j]*a[j+1];
+            }
+
+            System.arraycopy(out,0,out,1,out.length-1);
+            out[0] = y;
+
+            outData[i] = y;
+
+        }
+        return outData;
     }
 
 }
