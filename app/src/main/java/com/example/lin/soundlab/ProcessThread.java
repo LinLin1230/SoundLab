@@ -45,7 +45,7 @@ public class ProcessThread implements Runnable {
     private Button buttonPlayStart;
     private Button buttonPlayReset;
     private TextView textviewPlayStatus;
-    private int volumeThreshold = 40;
+    private int volumeThreshold = 20; // 40
 
 
     @Override
