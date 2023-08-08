@@ -4,6 +4,11 @@ import android.app.Activity;
 import android.media.AudioFormat;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -15,9 +20,11 @@ import com.wireless.kernel.nativeinterface.IKernelAudioService;
 import com.wireless.kernel.nativeinterface.IOperateCallback;
 import com.wireless.kernel.nativeinterface.UltraResult;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
@@ -52,6 +59,8 @@ public class ProcessThread implements Runnable {
 
     private AtomicLong curId = new AtomicLong(0);
 
+    private EditText textUltraThre;
+
     private static Handler mHandler = null;
 
     @Override
@@ -85,6 +94,33 @@ public class ProcessThread implements Runnable {
 
         progressbarBufferUsage = superActivity.findViewById(R.id.progressbarBufferUsage);
         textviewBufferUsage = superActivity.findViewById(R.id.textviewBufferUsage);
+
+        Button buttonSet = superActivity.findViewById(R.id.buttonSet);
+        textUltraThre = superActivity.findViewById(R.id.textUltraThre);
+        buttonSet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (audioService == null) {
+                    return;
+                }
+                String ts = textUltraThre.getText().toString();
+                if (audioService == null || ts.length() == 0) {
+                    return;
+                }
+                float t = Integer.parseInt(ts);
+                audioService.setUltraSignalFlagThre(t, new IOperateCallback() {
+                    @Override
+                    public void onResult(int rc, String msg) {
+                        mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                LogThread.debugLog(1, TAG, "setUltraSignalFlagThre: " + rc);
+                            }
+                        });
+                    }
+                });
+            }
+        });
 
         if (kernelService == null) {
             mHandler = new Handler(Looper.getMainLooper());
