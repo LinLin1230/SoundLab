@@ -27,6 +27,12 @@ public class KernelService {
     public IKernelAudioService audioService = null;
 
     public void start(IKernelCreateListener listener) {
+        File file_root;
+        file_root = new File(appPath);
+        if (!file_root.exists()) {
+            file_root.mkdirs();
+        }
+
         File file;
         file = new File(kernelPath);
         if (!file.exists()) {
@@ -53,6 +59,10 @@ public class KernelService {
 
     public void initUltraSignalFlag(String path, IOperateCallback result) {
         audioService.initUltraSignalFlag(kernelPath + "/" + path, result);
+    }
+
+    public void readUltraPcm(String path, IOperateCallback result) {
+        audioService.readUltraPcm(kernelPath + "/" + path, result);
     }
 
     private final IDependsAdapter getIDependsAdapter() {

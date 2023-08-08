@@ -411,6 +411,7 @@ public class MainActivity extends AppCompatActivity {
                     recordThreadRunnable.stop();
                 }
                 else {
+                    processThreadRunnable.reSetUltra();
                     SimpleDateFormat curDate = new SimpleDateFormat("yyyyMMddHHmmss");
                     curRecordItemPath = appPath + "/" + recordFileNamePrefix + curDate.format(new Date()) + ".pcm";
                     LogThread.debugLog(1, TAG, "curRecordItemPath: " + curRecordItemPath);

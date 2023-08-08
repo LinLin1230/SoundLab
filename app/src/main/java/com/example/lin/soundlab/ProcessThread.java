@@ -29,6 +29,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 
+import java.util.Locale;
+import biz.source_code.dsp.filter.FilterPassType;
+import biz.source_code.dsp.filter.IirFilter;
+import biz.source_code.dsp.filter.IirFilterDesignExstrom;
+import biz.source_code.dsp.filter.IirFilterCoefficients;
+
 public class ProcessThread implements Runnable {
     private static final String TAG = "SoundLabProcessThread";
 
@@ -157,6 +163,23 @@ public class ProcessThread implements Runnable {
         }
     }
 
+    public void reSetUltra() {
+        if (audioService == null) {
+            return;
+        }
+        audioService.ultraReset(new IOperateCallback() {
+            @Override
+            public void onResult(int rc, String msg) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        LogThread.debugLog(1, TAG, "ultraReset: " + rc);
+                    }
+                });
+            }
+        });
+    }
+
     private void process() {
         if (sonicQueue.getLength() < processBufferDataSize) {
             return;
@@ -172,9 +195,16 @@ public class ProcessThread implements Runnable {
         LogThread.debugLog(0, TAG, "Buffer usage: " + bufferUsage);
         setBufferUsage(bufferUsage);
 
+        double[] processBufferDataDouble = new double[processBufferDataSize];
         // C++
         if (audioService != null) {
-            ArrayList<Short> tempBuffers = new ArrayList<Short>(Arrays.asList(processBufferData));
+            // highpass filter 15000 Hz at 48000 Hz sampling rate
+            for (int i=0;i<processBufferDataSize;i++) {
+                processBufferDataDouble[i] = (double) processBufferData[i];
+            }
+            double[] processBufferataoubleAfterFite = IIRFilter(procesBufferlatDouble, FiterPasslype.highpas,fler0rder 5,fdf1: 15/480,fd2:15/48.0);
+
+            ArrayList<Short> tempBuffers = new ArrayList<Short>(Arrays.asList(processBufferataoubleAfterFite));
             audioService.ultraSignalAlignment(curId.getAndIncrement(), tempBuffers, new IOperateCallback() {
                 @Override
                 public void onResult(int rc, String msg) {
@@ -288,7 +318,7 @@ public class ProcessThread implements Runnable {
     }
 
     private void setBufferUsage(double bufferUsage) {
-        superActivity.runOnUiThread(new Runnable() {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
                 textviewBufferUsage.setText(String.format(Locale.US, "%.2f/%s", bufferUsage * 100, "%"));

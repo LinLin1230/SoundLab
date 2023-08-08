@@ -10,8 +10,6 @@ public final class UltraResult {
 
     /*package*/ boolean hasMaxVal;
 
-    /*package*/ boolean isExceedThre;
-
     /*package*/ float maxVal;
 
     public UltraResult(){}
@@ -19,11 +17,9 @@ public final class UltraResult {
     public UltraResult(
             long id,
             boolean hasMaxVal,
-            boolean isExceedThre,
             float maxVal) {
         this.id = id;
         this.hasMaxVal = hasMaxVal;
-        this.isExceedThre = isExceedThre;
         this.maxVal = maxVal;
     }
 
@@ -35,10 +31,6 @@ public final class UltraResult {
         return hasMaxVal;
     }
 
-    public boolean getIsExceedThre() {
-        return isExceedThre;
-    }
-
     public float getMaxVal() {
         return maxVal;
     }
@@ -48,7 +40,6 @@ public final class UltraResult {
         return "UltraResult{"
                 + "id=" + id + ","
                 + "hasMaxVal=" + hasMaxVal + ","
-                + "isExceedThre=" + isExceedThre + ","
                 + "maxVal=" + maxVal + ","
                 + "}";
     }
