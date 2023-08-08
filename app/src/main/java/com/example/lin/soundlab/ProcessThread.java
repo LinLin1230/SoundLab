@@ -2,10 +2,25 @@ package com.example.lin.soundlab;
 
 import android.app.Activity;
 import android.media.AudioFormat;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.wireless.kernel.KernelService;
+import com.wireless.kernel.KernelSetter;
+import com.wireless.kernel.api.IKernelCreateListener;
+import com.wireless.kernel.nativeinterface.IKernelAudioListener;
+import com.wireless.kernel.nativeinterface.IKernelAudioService;
+import com.wireless.kernel.nativeinterface.IOperateCallback;
+import com.wireless.kernel.nativeinterface.UltraResult;
+
+import java.util.ArrayList;
+
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ProcessThread implements Runnable {
     private static final String TAG = "SoundLabProcessThread";
@@ -17,8 +32,9 @@ public class ProcessThread implements Runnable {
 
     private static int processFrequency = 10;
     private static int samplingRate = 48000;
-    private static int processBufferDataSize = samplingRate/processFrequency;
-    private static short[] processBufferData = new short[processBufferDataSize];;
+    private static int processBufferDataSize = samplingRate / processFrequency;
+    private static Short[] processBufferData = new Short[processBufferDataSize];
+    ;
     private static int channel;
 
     private Activity superActivity;
@@ -31,11 +47,17 @@ public class ProcessThread implements Runnable {
     private ProgressBar progressbarBufferUsage;
     private TextView textviewBufferUsage;
 
+    private KernelService kernelService = null;
+    private IKernelAudioService audioService = null;
+
+    private AtomicLong curId = new AtomicLong(0);
+
+    private static Handler mHandler = null;
 
     @Override
     public void run() {
         LogThread.debugLog(2, TAG, "ProcessThread.run()");
-        while(true) {
+        while (true) {
             process();
             try {
                 Thread.sleep(sleepInterval);
@@ -50,10 +72,9 @@ public class ProcessThread implements Runnable {
         superActivity = activity;
 
         samplingRate = recordSamplingRate;
-        processBufferDataSize = samplingRate/processFrequency;
+        processBufferDataSize = samplingRate / processFrequency;
         channel = recordChannel;
-        processBufferData = new short[processBufferDataSize];
-
+        processBufferData = new Short[processBufferDataSize];
 
         // info display
         textviewTotalVolume = superActivity.findViewById(R.id.textviewTotalVolume);
@@ -64,6 +85,40 @@ public class ProcessThread implements Runnable {
 
         progressbarBufferUsage = superActivity.findViewById(R.id.progressbarBufferUsage);
         textviewBufferUsage = superActivity.findViewById(R.id.textviewBufferUsage);
+
+        if (kernelService == null) {
+            mHandler = new Handler(Looper.getMainLooper());
+            kernelService = new KernelService();
+            kernelService.start(new IKernelCreateListener() {
+
+                @Override
+                public void onKernelInitComplete() {
+                    audioService = kernelService.audioService;
+                    audioService.addListener(new IKernelAudioListener() {
+                        @Override
+                        public void onUltraSignalUpdate(UltraResult result) {
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    LogThread.debugLog(1, TAG, "onUltraSignalUpdate: " + result.toString());
+                                }
+                            });
+                        }
+                    });
+                    kernelService.initUltraSignalFlag("ZCSignalModulated.pcm", new IOperateCallback() {
+                        @Override
+                        public void onResult(int rc, String msg) {
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    LogThread.debugLog(1, TAG, "initUltraSignalFlag: " + rc);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
     }
 
     private void process() {
@@ -77,15 +132,31 @@ public class ProcessThread implements Runnable {
         }
 
         // update buffer usage
-        double bufferUsage = (double)sonicQueue.getLength()/sonicQueue.getCapacity();
+        double bufferUsage = (double) sonicQueue.getLength() / sonicQueue.getCapacity();
         LogThread.debugLog(0, TAG, "Buffer usage: " + bufferUsage);
         setBufferUsage(bufferUsage);
+
+        // C++
+        if (audioService != null) {
+            ArrayList<Short> tempBuffers = new ArrayList<Short>(Arrays.asList(processBufferData));
+            audioService.ultraSignalAlignment(curId.getAndIncrement(), tempBuffers, new IOperateCallback() {
+                @Override
+                public void onResult(int rc, String msg) {
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogThread.debugLog(1, TAG, "ultraSignalAlignment: " + msg);
+                        }
+                    });
+                }
+            });
+        }
 
         // MONO mode
         if (channel == AudioFormat.CHANNEL_IN_MONO) {
             long sum = 0;
-            for (int i = 0; i < processBufferDataSize;i=i+1) {
-                sum += Math.pow(processBufferData[i],2);
+            for (int i = 0; i < processBufferDataSize; i = i + 1) {
+                sum += Math.pow(processBufferData[i], 2);
             }
             double mean = sum / (double) processBufferDataSize;
             double volume = 10 * Math.log10(mean);
@@ -99,20 +170,20 @@ public class ProcessThread implements Runnable {
         if (channel == AudioFormat.CHANNEL_IN_STEREO) {
             long sum1 = 0;
             long sum2 = 0;
-            for (int i = 0; i < processBufferDataSize;i=i+2) {
-                sum1 += Math.pow(processBufferData[i],2);
-                sum2 += Math.pow(processBufferData[i+1],2);
-                LogThread.debugLog(0, TAG, "short1: " + processBufferData[i] + "  short2: " + processBufferData[i+1]);
+            for (int i = 0; i < processBufferDataSize; i = i + 2) {
+                sum1 += Math.pow(processBufferData[i], 2);
+                sum2 += Math.pow(processBufferData[i + 1], 2);
+                LogThread.debugLog(0, TAG, "short1: " + processBufferData[i] + "  short2: " + processBufferData[i + 1]);
             }
 
-            double volume1 = 10 * Math.log10(((double) sum1 / processBufferDataSize)*2);
-            double volume2 = 10 * Math.log10(((double) sum2 / processBufferDataSize)*2);
+            double volume1 = 10 * Math.log10(((double) sum1 / processBufferDataSize) * 2);
+            double volume2 = 10 * Math.log10(((double) sum2 / processBufferDataSize) * 2);
             double volume1WithCorrection = volumeCorrection(volume1);
             double volume2WithCorrection = volumeCorrection(volume2);
             LogThread.debugLog(0, TAG, "volume1: " + volume1WithCorrection + "  volume2: " + volume2WithCorrection);
             setVolume1(volume1WithCorrection);
             setVolume2(volume2WithCorrection);
-            setTotalVolume((volume1WithCorrection+volume2WithCorrection)/2);
+            setTotalVolume((volume1WithCorrection + volume2WithCorrection) / 2);
         }
 
     }
@@ -121,9 +192,8 @@ public class ProcessThread implements Runnable {
         boolean isWrite = sonicQueue.write(data);
         if (isWrite) {
             return true;
-        }
-        else {
-            LogThread.debugLog(4, TAG, "Write fail. The queue may be full. Buffer usage: " + (double)sonicQueue.getLength()/sonicQueue.getCapacity());
+        } else {
+            LogThread.debugLog(4, TAG, "Write fail. The queue may be full. Buffer usage: " + (double) sonicQueue.getLength() / sonicQueue.getCapacity());
             return false;
         }
     }
@@ -132,9 +202,8 @@ public class ProcessThread implements Runnable {
         boolean isWrite = sonicQueue.write(data);
         if (isWrite) {
             return true;
-        }
-        else {
-            LogThread.debugLog(4, TAG, "Write fail. The queue may be full. Buffer usage: " + (double)sonicQueue.getLength()/sonicQueue.getCapacity());
+        } else {
+            LogThread.debugLog(4, TAG, "Write fail. The queue may be full. Buffer usage: " + (double) sonicQueue.getLength() / sonicQueue.getCapacity());
             return false;
         }
     }
@@ -143,18 +212,16 @@ public class ProcessThread implements Runnable {
         return sonicQueue.read(data);
     }
 
-    public synchronized static boolean read(short[] data) {
+    public synchronized static boolean read(Short[] data) {
         return sonicQueue.read(data);
     }
-
-
 
 
     private void setTotalVolume(double volume) {
         superActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                textviewTotalVolume.setText(String.format(Locale.US,"%.2f",volume));
+                textviewTotalVolume.setText(String.format(Locale.US, "%.2f", volume));
             }
         });
     }
@@ -163,8 +230,8 @@ public class ProcessThread implements Runnable {
         superActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                textviewVolume1.setText(String.format(Locale.US,"%.2f",volume));
-                progressbarVolume1.setProgress((int)volume);
+                textviewVolume1.setText(String.format(Locale.US, "%.2f", volume));
+                progressbarVolume1.setProgress((int) volume);
             }
         });
     }
@@ -173,8 +240,8 @@ public class ProcessThread implements Runnable {
         superActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                textviewVolume2.setText(String.format(Locale.US,"%.2f",volume));
-                progressbarVolume2.setProgress((int)volume);
+                textviewVolume2.setText(String.format(Locale.US, "%.2f", volume));
+                progressbarVolume2.setProgress((int) volume);
             }
         });
     }
@@ -188,8 +255,8 @@ public class ProcessThread implements Runnable {
         superActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                textviewBufferUsage.setText(String.format(Locale.US,"%.2f/%s",bufferUsage*100, "%"));
-                progressbarBufferUsage.setProgress((int)(bufferUsage*100));
+                textviewBufferUsage.setText(String.format(Locale.US, "%.2f/%s", bufferUsage * 100, "%"));
+                progressbarBufferUsage.setProgress((int) (bufferUsage * 100));
             }
         });
     }
