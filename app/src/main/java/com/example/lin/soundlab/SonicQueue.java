@@ -60,7 +60,7 @@ public class SonicQueue {
     }
 
     // read short[]
-    public boolean read(Short[] data) {
+    public boolean read(short[] data) {
         int len = data.length;
         if(getLength()<len)
             return false;

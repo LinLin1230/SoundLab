@@ -154,12 +154,43 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="ultra thre:" />
+
                 <EditText
                     android:id="@+id/textUltraThre"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="300" />
+                    android:text="5000" />
+
+                <CheckBox
+                    android:id="@+id/checkboxFindMaxVal"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:text="FindM" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ultra space:" />
+
+                <EditText
+                    android:id="@+id/textUltraSpace"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="5" />
+
+                <CheckBox
+                    android:id="@+id/checkboxNeedFilter"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:text="needFilter" />
 
                 <Button
                     android:id="@+id/buttonSet"

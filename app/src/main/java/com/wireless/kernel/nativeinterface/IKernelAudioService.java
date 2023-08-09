@@ -17,7 +17,7 @@ public interface IKernelAudioService {
 
     public void readPcm(String path, boolean is3D, IOperateCallback result);
 
-    public void readUltraPcm(String path, boolean needFilter, IOperateCallback result);
+    public void readUltraPcm(String path, boolean needFilter, boolean isMono, IOperateCallback result);
 
     public void readUltraPcmRecord(String path, int chirpId, IOperateCallback result);
 
@@ -28,6 +28,8 @@ public interface IKernelAudioService {
     public void ultraSignalAlignment(long id, ArrayList<Short> buffer, boolean needFilter, IOperateCallback result);
 
     public void ultraReset(IOperateCallback result);
+
+    public void ultraSetSpace(int space, IOperateCallback result);
 
     static final class CppProxy implements IKernelAudioService
     {
@@ -104,13 +106,13 @@ public interface IKernelAudioService {
         private native void native_readPcm(long _nativeRef, String path, boolean is3D, IOperateCallback result);
 
         @Override
-        public void readUltraPcm(String path, boolean needFilter, IOperateCallback result)
+        public void readUltraPcm(String path, boolean needFilter, boolean isMono, IOperateCallback result)
         {
             assert !this.destroyed.get() : "trying to use a destroyed object";
-            native_readUltraPcm(this.nativeRef, path, needFilter, result);
+            native_readUltraPcm(this.nativeRef, path, needFilter, isMono, result);
         }
 
-        private native void native_readUltraPcm(long _nativeRef, String path, boolean needFilter, IOperateCallback result);
+        private native void native_readUltraPcm(long _nativeRef, String path, boolean needFilter, boolean isMono, IOperateCallback result);
 
         @Override
         public void readUltraPcmRecord(String path, int chirpId, IOperateCallback result)
@@ -156,5 +158,14 @@ public interface IKernelAudioService {
         }
 
         private native void native_ultraReset(long _nativeRef, IOperateCallback result);
+
+        @Override
+        public void ultraSetSpace(int space, IOperateCallback result)
+        {
+            assert !this.destroyed.get() : "trying to use a destroyed object";
+            native_ultraSetSpace(this.nativeRef, space, result);
+        }
+
+        private native void native_ultraSetSpace(long _nativeRef, int space, IOperateCallback result);
     }
 }

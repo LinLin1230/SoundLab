@@ -28,6 +28,9 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import com.wireless.kernel.KernelService;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -79,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean initialCheckboxIsChecked = false;
 
+    private KernelService kernelService = null;
+
     private String recordFileNamePrefix = "";
     private String curRecordItemPath = "";
     private boolean isRecording = false;
@@ -96,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
     private LogThread logThreadRunnable;
     private ProcessThread processThreadRunnable;
 
-
+    private Boolean useKernel = true;
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -305,6 +310,7 @@ public class MainActivity extends AppCompatActivity {
         spinnerPlaySamplingRate.setSelection(initialPlaySamplingRatePosition);
 
 
+        kernelService = KernelService.create(this);
         // Record thread.
         recordThreadRunnable = new RecordThread();
 
@@ -411,7 +417,7 @@ public class MainActivity extends AppCompatActivity {
                     recordThreadRunnable.stop();
                 }
                 else {
-                    processThreadRunnable.reSetUltra();
+                    kernelService.reSetUltra();
                     SimpleDateFormat curDate = new SimpleDateFormat("yyyyMMddHHmmss");
                     curRecordItemPath = appPath + "/" + recordFileNamePrefix + curDate.format(new Date()) + ".pcm";
                     LogThread.debugLog(1, TAG, "curRecordItemPath: " + curRecordItemPath);
@@ -576,8 +582,7 @@ public class MainActivity extends AppCompatActivity {
 
     // set record thread
     private void setRecordThread() {
-
-        recordThreadRunnable.setup(this,curRecordItemPath, curRecordAudioSource, curRecordChannel, curRecordSamplingRate, isRecordChecked);
+        recordThreadRunnable.setup(this, useKernel, curRecordItemPath, curRecordAudioSource, curRecordChannel, curRecordSamplingRate, isRecordChecked);
         setProcessThread();
     }
 
@@ -587,7 +592,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setProcessThread() {
-        processThreadRunnable.setup(this, curRecordChannel, curRecordSamplingRate);
+        processThreadRunnable.setup(this, kernelService, useKernel, curRecordChannel, curRecordSamplingRate);
     }
 
 

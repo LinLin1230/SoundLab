@@ -10,6 +10,8 @@ public final class UltraResult {
 
     /*package*/ boolean hasMaxVal;
 
+    /*package*/ float curVal;
+
     /*package*/ float maxVal;
 
     public UltraResult(){}
@@ -17,9 +19,11 @@ public final class UltraResult {
     public UltraResult(
             long id,
             boolean hasMaxVal,
+            float curVal,
             float maxVal) {
         this.id = id;
         this.hasMaxVal = hasMaxVal;
+        this.curVal = curVal;
         this.maxVal = maxVal;
     }
 
@@ -31,6 +35,10 @@ public final class UltraResult {
         return hasMaxVal;
     }
 
+    public float getCurVal() {
+        return curVal;
+    }
+
     public float getMaxVal() {
         return maxVal;
     }
@@ -40,6 +48,7 @@ public final class UltraResult {
         return "UltraResult{"
                 + "id=" + id + ","
                 + "hasMaxVal=" + hasMaxVal + ","
+                + "curVal=" + curVal + ","
                 + "maxVal=" + maxVal + ","
                 + "}";
     }

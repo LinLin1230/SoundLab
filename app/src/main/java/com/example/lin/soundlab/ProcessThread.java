@@ -2,38 +2,23 @@ package com.example.lin.soundlab;
 
 import android.app.Activity;
 import android.media.AudioFormat;
-import android.os.Looper;
-import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.wireless.kernel.KernelService;
-import com.wireless.kernel.KernelSetter;
-import com.wireless.kernel.api.IKernelCreateListener;
-import com.wireless.kernel.nativeinterface.IKernelAudioListener;
-import com.wireless.kernel.nativeinterface.IKernelAudioService;
-import com.wireless.kernel.nativeinterface.IOperateCallback;
-import com.wireless.kernel.nativeinterface.UltraResult;
+import com.wireless.kernel.api.IKernelListener;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicLong;
-
-import android.os.Handler;
 
 import biz.source_code.dsp.filter.FilterPassType;
-import biz.source_code.dsp.filter.IirFilter;
 import biz.source_code.dsp.filter.IirFilterDesignExstrom;
 import biz.source_code.dsp.filter.IirFilterCoefficients;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class ProcessThread implements Runnable {
+public class ProcessThread implements Runnable, IKernelListener {
     private static final String TAG = "SoundLabProcessThread";
 
     private int sleepInterval = 10;
@@ -44,7 +29,7 @@ public class ProcessThread implements Runnable {
     private static int processFrequency = 10;
     private static int samplingRate = 48000;
     private static int processBufferDataSize = samplingRate / processFrequency;
-    private static Short[] processBufferData = new Short[processBufferDataSize];
+    private static short[] processBufferData = new short[processBufferDataSize];
     private static double[] processBufferDataDouble = new double[processBufferDataSize];
     private static double[] processBufferDataDoubleL = new double[processBufferDataSize];
     private static double[] processBufferDataDoubleR = new double[processBufferDataSize];
@@ -61,21 +46,15 @@ public class ProcessThread implements Runnable {
     private ProgressBar progressbarBufferUsage;
     private TextView textviewBufferUsage;
 
-    private KernelService kernelService = null;
-    private IKernelAudioService audioService = null;
-
-    private AtomicLong curId = new AtomicLong(0);
-
-    private EditText textUltraThre;
-
-    private static Handler mHandler = null;
-
-
     private Button buttonPlayStart;
     private Button buttonPlayReset;
     private TextView textviewPlayStatus;
     private int volumeThreshold = 20; // 40
 
+    private KernelService kernelService = null;
+    private Boolean useKernel = true;
+
+    private static ConcurrentLinkedQueue<ArrayList<Short>> kbuffers = new ConcurrentLinkedQueue<>();
 
     @Override
     public void run() {
@@ -91,13 +70,17 @@ public class ProcessThread implements Runnable {
 
     }
 
-    public void setup(Activity activity, int recordChannel, int recordSamplingRate) {
+    public void setup(Activity activity, KernelService kernelService, Boolean useKernel, int recordChannel, int recordSamplingRate) {
         superActivity = activity;
+
+        this.kernelService = kernelService;
+        this.kernelService.setListener(this);
+        this.useKernel = useKernel;
 
         samplingRate = recordSamplingRate;
         processBufferDataSize = samplingRate / processFrequency;
         channel = recordChannel;
-        processBufferData = new Short[processBufferDataSize];
+        processBufferData = new short[processBufferDataSize];
 
         // info display
         textviewTotalVolume = superActivity.findViewById(R.id.textviewTotalVolume);
@@ -114,88 +97,38 @@ public class ProcessThread implements Runnable {
         buttonPlayStart = superActivity.findViewById(R.id.buttonPlayStart);
         buttonPlayReset = superActivity.findViewById(R.id.buttonPlayReset);
         textviewPlayStatus = superActivity.findViewById(R.id.textviewPlayStatus);
-
-        Button buttonSet = superActivity.findViewById(R.id.buttonSet);
-        textUltraThre = superActivity.findViewById(R.id.textUltraThre);
-        buttonSet.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (audioService == null) {
-                    return;
-                }
-                String ts = textUltraThre.getText().toString();
-                if (audioService == null || ts.length() == 0) {
-                    return;
-                }
-                float t = Integer.parseInt(ts);
-                audioService.setUltraSignalFlagThre(t, new IOperateCallback() {
-                    @Override
-                    public void onResult(int rc, String msg) {
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                LogThread.debugLog(1, TAG, "setUltraSignalFlagThre: " + rc);
-                            }
-                        });
-                    }
-                });
-            }
-        });
-
-        if (kernelService == null) {
-            mHandler = new Handler(Looper.getMainLooper());
-            kernelService = new KernelService();
-            kernelService.start(new IKernelCreateListener() {
-
-                @Override
-                public void onKernelInitComplete() {
-                    audioService = kernelService.audioService;
-                    audioService.addListener(new IKernelAudioListener() {
-                        @Override
-                        public void onUltraSignalUpdate(UltraResult result) {
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    LogThread.debugLog(1, TAG, "onUltraSignalUpdate: " + result.toString());
-                                }
-                            });
-                        }
-                    });
-                    kernelService.initUltraSignalFlag("ZCSignalModulated.pcm", new IOperateCallback() {
-                        @Override
-                        public void onResult(int rc, String msg) {
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    LogThread.debugLog(1, TAG, "initUltraSignalFlag: " + rc);
-                                }
-                            });
-                        }
-                    });
-                }
-            });
-        }
     }
 
-    public void reSetUltra() {
-        if (audioService == null) {
-            return;
-        }
-        curId.set(0);
-        audioService.ultraReset(new IOperateCallback() {
-            @Override
-            public void onResult(int rc, String msg) {
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        LogThread.debugLog(1, TAG, "ultraReset: " + rc);
-                    }
-                });
-            }
-        });
+    public void onFindMaxVal() {
+        replyZC();
     }
+
+    public synchronized static void writeShort(short[] data) {
+        if (channel == AudioFormat.CHANNEL_IN_MONO) {
+            ArrayList<Short> kbuffer = new ArrayList<Short>(data.length);
+            for (int i = 0; i < data.length; i += 1) {
+                kbuffer.add(data[i]);
+            }
+            kbuffers.add(kbuffer);
+        } else if (channel == AudioFormat.CHANNEL_IN_STEREO) {
+            ArrayList<Short> kbuffer = new ArrayList<Short>(data.length / 2);
+            for (int i = 0; i < data.length; i += 2) {
+                kbuffer.add(data[i]);
+            }
+            kbuffers.add(kbuffer);
+        }
+
+    }
+
 
     private void process() {
+        if (useKernel) {
+            if (kbuffers.isEmpty()) {
+                return;
+            }
+            kernelService.process(kbuffers.poll());
+            return;
+        }
         if (sonicQueue.getLength() < processBufferDataSize) {
             return;
         }
@@ -211,84 +144,69 @@ public class ProcessThread implements Runnable {
         setBufferUsage(bufferUsage);
 
         double[] processBufferDataDouble = new double[processBufferDataSize];
-        // C++
-        if (audioService != null) {
-            ArrayList<Short> tempBuffers = new ArrayList<Short>(Arrays.asList(processBufferData));
-            audioService.ultraSignalAlignment(curId.getAndIncrement(), tempBuffers, false, new IOperateCallback() {
-                @Override
-                public void onResult(int rc, String msg) {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            LogThread.debugLog(1, TAG, "ultraReset: " + rc);
-                        }
-                    });
-                }
-            });
-        }
 
-//        // MONO mode
-//        if (channel == AudioFormat.CHANNEL_IN_MONO) {
-//
-//            // highpass filter 15000 Hz at 48000 Hz sampling rate
-//            for (int i = 0; i < processBufferDataSize; i++) {
-//                processBufferDataDouble[i] = (double) processBufferData[i];
-//            }
-//            double[] processBufferDataDoubleAfterFilter = IIRFilter(processBufferDataDouble, FilterPassType.highpass, 5, 15 / 48.0, 15 / 48.0);
-//
-//
-//            long sum = 0;
-//            for (int i = 0; i < processBufferDataSize; i++) {
-//                sum += Math.pow(processBufferDataDoubleAfterFilter[i], 2);
-//            }
-//            double mean = sum / (double) processBufferDataSize;
-//            double volume = 10 * Math.log10(mean);
-//            double volumeWithCorrection = volumeCorrection(volume);
-//            LogThread.debugLog(0, TAG, "volume: " + volumeWithCorrection);
-//            setTotalVolume(volumeWithCorrection);
-//            setVolume1(volumeWithCorrection);
-//            setVolume2(volumeWithCorrection);
-//
-//            tryPlayReset();
-//
-//            if (volume > volumeThreshold) {
-//                replyZC();
-//            }
-//        }
-//        // STEREO mode
-//        if (channel == AudioFormat.CHANNEL_IN_STEREO) {
-//
-//            // highpass filter 15000 Hz at 48000 Hz sampling rate
-//            for (int i = 0; i < processBufferDataSize / 2; i++) {
-//                processBufferDataDoubleL[i] = (double) processBufferData[2 * i];
-//                processBufferDataDoubleR[i] = (double) processBufferData[2 * i + 1];
-//            }
-//            double[] processBufferDataDoubleAfterFilterL = IIRFilter(processBufferDataDoubleL, FilterPassType.highpass, 5, 15 / 48.0, 15 / 48.0);
-//            double[] processBufferDataDoubleAfterFilterR = IIRFilter(processBufferDataDoubleR, FilterPassType.highpass, 5, 15 / 48.0, 15 / 48.0);
-//
-//            long sum1 = 0;
-//            long sum2 = 0;
-//            for (int i = 0; i < processBufferDataSize / 2; i++) {
-//                sum1 += Math.pow(processBufferDataDoubleAfterFilterL[i], 2);
-//                sum2 += Math.pow(processBufferDataDoubleAfterFilterR[i], 2);
-////                LogThread.debugLog(0, TAG, "short1: " + processBufferData[i] + "  short2: " + processBufferData[i+1]);
-//            }
-//
-//            double volume1 = 10 * Math.log10(((double) sum1 / processBufferDataSize) * 2);
-//            double volume2 = 10 * Math.log10(((double) sum2 / processBufferDataSize) * 2);
-//            double volume1WithCorrection = volumeCorrection(volume1);
-//            double volume2WithCorrection = volumeCorrection(volume2);
-//            LogThread.debugLog(0, TAG, "volume1: " + volume1WithCorrection + "  volume2: " + volume2WithCorrection);
-//            setVolume1(volume1WithCorrection);
-//            setVolume2(volume2WithCorrection);
-//            setTotalVolume((volume1WithCorrection + volume2WithCorrection) / 2);
-//
-//
-//            tryPlayReset();
-//            if (volume1 > volumeThreshold | volume2 > volumeThreshold) {
-//                replyZC();
-//            }
-//        }
+        // MONO mode
+        if (channel == AudioFormat.CHANNEL_IN_MONO) {
+
+            // highpass filter 15000 Hz at 48000 Hz sampling rate
+            for (int i = 0; i < processBufferDataSize; i++) {
+                processBufferDataDouble[i] = (double) processBufferData[i];
+            }
+            double[] processBufferDataDoubleAfterFilter = IIRFilter(processBufferDataDouble, FilterPassType.highpass, 5, 15 / 48.0, 15 / 48.0);
+
+
+            long sum = 0;
+            for (int i = 0; i < processBufferDataSize; i++) {
+                sum += Math.pow(processBufferDataDoubleAfterFilter[i], 2);
+            }
+            double mean = sum / (double) processBufferDataSize;
+            double volume = 10 * Math.log10(mean);
+            double volumeWithCorrection = volumeCorrection(volume);
+            LogThread.debugLog(0, TAG, "volume: " + volumeWithCorrection);
+            setTotalVolume(volumeWithCorrection);
+            setVolume1(volumeWithCorrection);
+            setVolume2(volumeWithCorrection);
+
+            tryPlayReset();
+
+            if (volume > volumeThreshold) {
+                replyZC();
+            }
+        }
+        // STEREO mode
+        if (channel == AudioFormat.CHANNEL_IN_STEREO) {
+
+            // highpass filter 15000 Hz at 48000 Hz sampling rate
+            for (int i = 0; i < processBufferDataSize / 2; i++) {
+                processBufferDataDoubleL[i] = (double) processBufferData[2 * i];
+                processBufferDataDoubleR[i] = (double) processBufferData[2 * i + 1];
+            }
+            double[] processBufferDataDoubleAfterFilterL = IIRFilter(processBufferDataDoubleL, FilterPassType.highpass, 5, 15 / 48.0, 15 / 48.0);
+            double[] processBufferDataDoubleAfterFilterR = IIRFilter(processBufferDataDoubleR, FilterPassType.highpass, 5, 15 / 48.0, 15 / 48.0);
+
+            long sum1 = 0;
+            long sum2 = 0;
+            for (int i = 0; i < processBufferDataSize / 2; i++) {
+                sum1 += Math.pow(processBufferDataDoubleAfterFilterL[i], 2);
+                sum2 += Math.pow(processBufferDataDoubleAfterFilterR[i], 2);
+//                LogThread.debugLog(0, TAG, "short1: " + processBufferData[i] + "  short2: " + processBufferData[i+1]);
+            }
+
+            double volume1 = 10 * Math.log10(((double) sum1 / processBufferDataSize) * 2);
+            double volume2 = 10 * Math.log10(((double) sum2 / processBufferDataSize) * 2);
+            double volume1WithCorrection = volumeCorrection(volume1);
+            double volume2WithCorrection = volumeCorrection(volume2);
+            LogThread.debugLog(0, TAG, "volume1: " + volume1WithCorrection + "  volume2: " + volume2WithCorrection);
+            setVolume1(volume1WithCorrection);
+            setVolume2(volume2WithCorrection);
+            setTotalVolume((volume1WithCorrection + volume2WithCorrection) / 2);
+
+
+            tryPlayReset();
+            if (volume1 > volumeThreshold | volume2 > volumeThreshold) {
+                replyZC();
+            }
+        }
 
     }
 
@@ -316,7 +234,7 @@ public class ProcessThread implements Runnable {
         return sonicQueue.read(data);
     }
 
-    public synchronized static boolean read(Short[] data) {
+    public synchronized static boolean read(short[] data) {
         return sonicQueue.read(data);
     }
 
@@ -356,7 +274,7 @@ public class ProcessThread implements Runnable {
     }
 
     private void setBufferUsage(double bufferUsage) {
-        mHandler.post(new Runnable() {
+        superActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 textviewBufferUsage.setText(String.format(Locale.US, "%.2f/%s", bufferUsage * 100, "%"));
