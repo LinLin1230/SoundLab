@@ -62,7 +62,7 @@ public class KernelService {
     }
 
     public void readUltraPcm(String path, IOperateCallback result) {
-        audioService.readUltraPcm(kernelPath + "/" + path, result);
+        audioService.readUltraPcm(kernelPath + "/" + path, true, result);
     }
 
     private final IDependsAdapter getIDependsAdapter() {

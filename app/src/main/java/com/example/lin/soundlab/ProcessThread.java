@@ -213,12 +213,6 @@ public class ProcessThread implements Runnable {
         double[] processBufferDataDouble = new double[processBufferDataSize];
         // C++
         if (audioService != null) {
-            // highpass filter 15000 Hz at 48000 Hz sampling rate
-//            for (int i = 0; i < processBufferDataSize; i++) {
-//                processBufferDataDouble[i] = (double) processBufferData[i];
-//            }
-//            double[] processBufferataoubleAfterFite = IIRFilter(procesBufferlatDouble, FiterPasslype.highpas,fler0rder 5,fdf1: 15/480,fd2:15/48.0);
-
             ArrayList<Short> tempBuffers = new ArrayList<Short>(Arrays.asList(processBufferData));
             audioService.ultraSignalAlignment(curId.getAndIncrement(), tempBuffers, true, new IOperateCallback() {
                 @Override

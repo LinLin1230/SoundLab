@@ -17,13 +17,15 @@ public interface IKernelAudioService {
 
     public void readPcm(String path, boolean is3D, IOperateCallback result);
 
-    public void readUltraPcm(String path, IOperateCallback result);
+    public void readUltraPcm(String path, boolean needFilter, IOperateCallback result);
+
+    public void readUltraPcmRecord(String path, int chirpId, IOperateCallback result);
 
     public void initUltraSignalFlag(String path, IOperateCallback result);
 
     public void setUltraSignalFlagThre(float thre, IOperateCallback result);
 
-    public void ultraSignalAlignment(long id, ArrayList<Short> buffer, IOperateCallback result);
+    public void ultraSignalAlignment(long id, ArrayList<Short> buffer, boolean needFilter, IOperateCallback result);
 
     public void ultraReset(IOperateCallback result);
 
@@ -102,13 +104,22 @@ public interface IKernelAudioService {
         private native void native_readPcm(long _nativeRef, String path, boolean is3D, IOperateCallback result);
 
         @Override
-        public void readUltraPcm(String path, IOperateCallback result)
+        public void readUltraPcm(String path, boolean needFilter, IOperateCallback result)
         {
             assert !this.destroyed.get() : "trying to use a destroyed object";
-            native_readUltraPcm(this.nativeRef, path, result);
+            native_readUltraPcm(this.nativeRef, path, needFilter, result);
         }
 
-        private native void native_readUltraPcm(long _nativeRef, String path, IOperateCallback result);
+        private native void native_readUltraPcm(long _nativeRef, String path, boolean needFilter, IOperateCallback result);
+
+        @Override
+        public void readUltraPcmRecord(String path, int chirpId, IOperateCallback result)
+        {
+            assert !this.destroyed.get() : "trying to use a destroyed object";
+            native_readUltraPcmRecord(this.nativeRef, path, chirpId, result);
+        }
+
+        private native void native_readUltraPcmRecord(long _nativeRef, String path, int chirpId, IOperateCallback result);
 
         @Override
         public void initUltraSignalFlag(String path, IOperateCallback result)
@@ -129,13 +140,13 @@ public interface IKernelAudioService {
         private native void native_setUltraSignalFlagThre(long _nativeRef, float thre, IOperateCallback result);
 
         @Override
-        public void ultraSignalAlignment(long id, ArrayList<Short> buffer, IOperateCallback result)
+        public void ultraSignalAlignment(long id, ArrayList<Short> buffer, boolean needFilter, IOperateCallback result)
         {
             assert !this.destroyed.get() : "trying to use a destroyed object";
-            native_ultraSignalAlignment(this.nativeRef, id, buffer, result);
+            native_ultraSignalAlignment(this.nativeRef, id, buffer, needFilter, result);
         }
 
-        private native void native_ultraSignalAlignment(long _nativeRef, long id, ArrayList<Short> buffer, IOperateCallback result);
+        private native void native_ultraSignalAlignment(long _nativeRef, long id, ArrayList<Short> buffer, boolean needFilter, IOperateCallback result);
 
         @Override
         public void ultraReset(IOperateCallback result)
