@@ -214,7 +214,7 @@ public class ProcessThread implements Runnable {
         // C++
         if (audioService != null) {
             ArrayList<Short> tempBuffers = new ArrayList<Short>(Arrays.asList(processBufferData));
-            audioService.ultraSignalAlignment(curId.getAndIncrement(), tempBuffers, true, new IOperateCallback() {
+            audioService.ultraSignalAlignment(curId.getAndIncrement(), tempBuffers, false, new IOperateCallback() {
                 @Override
                 public void onResult(int rc, String msg) {
                     mHandler.post(new Runnable() {
