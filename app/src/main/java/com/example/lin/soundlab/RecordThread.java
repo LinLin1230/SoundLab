@@ -47,7 +47,6 @@ public class RecordThread implements Runnable {
     private Spinner spinnerRecordChannel;
     private Spinner spinnerRecordSamplingRate;
     private EditText textFileNamePrefix;
-    private short[] audioBufferDataShort;
 
     private Boolean useKernel = false;
 
@@ -77,20 +76,19 @@ public class RecordThread implements Runnable {
         recordChecked = isRecordChecked;
         encoding = AudioFormat.ENCODING_PCM_16BIT;
 
-        audioBufferDataSize = 4 * AudioRecord.getMinBufferSize(samplingRate, channel, encoding);
         if (useKernel) {
             if (channel == AudioFormat.CHANNEL_IN_MONO) {
                 audioBufferDataSize = 4800 * 4;
-                audioBufferDataShort = new short[audioBufferDataSize / 4];
             } else if (channel == AudioFormat.CHANNEL_IN_STEREO) {
                 audioBufferDataSize = 4800 * 8;
-                audioBufferDataShort = new short[audioBufferDataSize / 4];
             }
+        } else {
+            audioBufferDataSize = 4 * AudioRecord.getMinBufferSize(samplingRate, channel, encoding);
         }
+        audioBufferData = new byte[audioBufferDataSize / 2];
 //        LogThread.debugLog(2, TAG, "audioBufferDataSize: "+audioBufferDataSize);
         audioFormat = new AudioFormat.Builder().setEncoding(encoding).setSampleRate(samplingRate).setChannelMask(channel).build();
         audioRecord = new AudioRecord.Builder().setAudioSource(audioSource).setAudioFormat(audioFormat).setBufferSizeInBytes(audioBufferDataSize).build();
-        audioBufferData = new byte[audioBufferDataSize / 2];
     }
 
     //    @RequiresApi(api = Build.VERSION_CODES.P)
@@ -137,38 +135,21 @@ public class RecordThread implements Runnable {
         }
 
         while (isRecording) {
-            if (useKernel) {
-                int bufferReadResult = audioRecord.read(audioBufferDataShort, 0, audioBufferDataShort.length);
-                LogThread.debugLog(0, TAG, "bufferReadResult: " + bufferReadResult);
-                if (bufferReadResult != 0) {
-                    // write file
-                    if (recordChecked) {
-                        try {
-                            dataOS.write(audioBufferData, 0, bufferReadResult);
+            int bufferReadResult = audioRecord.read(audioBufferData, 0, audioBufferData.length);
+            LogThread.debugLog(0, TAG, "bufferReadResult: " + bufferReadResult);
+            if (bufferReadResult != 0) {
+                // write file
+                if (recordChecked) {
+                    try {
+                        dataOS.write(audioBufferData, 0, bufferReadResult);
 
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                    // write data to process thread
-                    ProcessThread.writeShort(audioBufferDataShort);
                 }
-            } else {
-                int bufferReadResult = audioRecord.read(audioBufferData, 0, audioBufferData.length);
-                LogThread.debugLog(0, TAG, "bufferReadResult: " + bufferReadResult);
-                if (bufferReadResult != 0) {
-                    // write file
-                    if (recordChecked) {
-                        try {
-                            dataOS.write(audioBufferData, 0, bufferReadResult);
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    // write data to process thread
-                    ProcessThread.write(audioBufferData);
-                }
+                // write data to process thread
+                // write data to process thread
+                ProcessThread.write(audioBufferData);
             }
         }
         audioRecord.stop();

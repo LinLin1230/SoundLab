@@ -52,7 +52,7 @@ public class ProcessThread implements Runnable, IKernelListener {
     private int volumeThreshold = 20; // 40
 
     private KernelService kernelService = null;
-    private Boolean useKernel = true;
+    private static Boolean useKernel = true;
 
     private static ConcurrentLinkedQueue<ArrayList<Short>> kbuffers = new ConcurrentLinkedQueue<>();
 
@@ -75,7 +75,7 @@ public class ProcessThread implements Runnable, IKernelListener {
 
         this.kernelService = kernelService;
         this.kernelService.setListener(this);
-        this.useKernel = useKernel;
+        ProcessThread.useKernel = useKernel;
 
         samplingRate = recordSamplingRate;
         processBufferDataSize = samplingRate / processFrequency;
@@ -102,24 +102,6 @@ public class ProcessThread implements Runnable, IKernelListener {
     public void onFindMaxVal() {
         replyZC();
     }
-
-    public synchronized static void writeShort(short[] data) {
-        if (channel == AudioFormat.CHANNEL_IN_MONO) {
-            ArrayList<Short> kbuffer = new ArrayList<Short>(data.length);
-            for (int i = 0; i < data.length; i += 1) {
-                kbuffer.add(data[i]);
-            }
-            kbuffers.add(kbuffer);
-        } else if (channel == AudioFormat.CHANNEL_IN_STEREO) {
-            ArrayList<Short> kbuffer = new ArrayList<Short>(data.length / 2);
-            for (int i = 0; i < data.length; i += 2) {
-                kbuffer.add(data[i]);
-            }
-            kbuffers.add(kbuffer);
-        }
-
-    }
-
 
     private void process() {
         if (useKernel) {
@@ -211,6 +193,22 @@ public class ProcessThread implements Runnable, IKernelListener {
     }
 
     public synchronized static boolean write(byte[] data) {
+        if (useKernel) {
+            if (channel == AudioFormat.CHANNEL_IN_MONO) {
+                ArrayList<Short> kbuffer = new ArrayList<Short>(data.length / 2);
+                for (int i = 0; i < data.length; i += 2) {
+                    kbuffer.add((short)(data[i] & 0x00ff | data[i+1] << 8));
+                }
+                kbuffers.add(kbuffer);
+            } else if (channel == AudioFormat.CHANNEL_IN_STEREO) {
+                ArrayList<Short> kbuffer = new ArrayList<Short>(data.length / 4);
+                for (int i = 0; i < data.length; i += 4) {
+                    kbuffer.add((short)(data[i] & 0x00ff | data[i+1] << 8));
+                }
+                kbuffers.add(kbuffer);
+            }
+            return true;
+        }
         boolean isWrite = sonicQueue.write(data);
         if (isWrite) {
             return true;
